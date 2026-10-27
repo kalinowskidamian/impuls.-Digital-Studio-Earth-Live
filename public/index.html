@@ -234,7 +234,7 @@ function startGlobe(){
    .pathPoints("points").pathPointLat(function(p){return p[1];})
    .pathPointLng(function(p){return p[0];})
    .pathColor(function(){return "rgba(168,198,236,0.24)";})
-   .pathAltitude(.004).pathStroke(.16).pathTransitionDuration(0);
+   .pathPointAlt(.004).pathStroke(null).pathTransitionDuration(0);
   state.globe=g;
   g.controls().autoRotateSpeed=.33;
   g.controls().enableDamping=true;
