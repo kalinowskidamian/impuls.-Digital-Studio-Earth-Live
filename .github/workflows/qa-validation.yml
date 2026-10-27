@@ -18,3 +18,5 @@ jobs:
         run: node scripts/validate-inline-js.cjs
       - name: Test 3D library bootstrap and CDN failover
         run: node scripts/verify-globe-bootstrap.cjs
+      - name: Test map markers, country outlines, categories and hover
+        run: node scripts/verify-map-interactions.cjs
