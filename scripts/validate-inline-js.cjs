@@ -34,4 +34,7 @@ assert.ok(
   "Studio logo dot must retain its official magenta glow"
 );
 assert.ok(html.includes(".studio-period{color:#fff}"), "Studio logo period should be white");
+assert.ok(html.includes('id="strap"'), "Masthead label must have an ID for i18n updates");
+assert.ok(html.includes("grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)"), "Header must keep the masthead centered between equal columns");
+assert.ok(html.includes(".strap{white-space:nowrap;justify-self:center;text-align:center}"), "Masthead needs fixed center alignment");
 console.log("QA PASS: " + inlineCount + " inline script(s) parse, primary UI exists and PL/EN switch is accessible.");

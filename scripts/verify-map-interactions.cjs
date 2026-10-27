@@ -87,15 +87,18 @@ async function main(){
  assert.equal(calls.height,560,"Globe height must match its stage");
  assert.equal(byId("#globeWarning").hidden,true,"Successful init must clear old WebGL warning");
  assert.equal(calls.markers.length,5,"Default all-layer globe matches both API feeds");
+ assert.equal(byId("#strap").textContent,"✳  SYSTEM OBSERWACJI PLANETY  / 001","Initial PL masthead is translated");
  assert.equal(languages[0].attrs["aria-pressed"],"true","PL active on initial render");
  assert.equal(languages[1].attrs["aria-pressed"],"false","EN inactive on initial render");
  languages[1].fire("click");
  assert.equal(doc.documentElement.lang,"en","EN button changes application language");
+ assert.equal(byId("#strap").textContent,"✳  PLANETARY OBSERVATION SYSTEM  / 001","EN masthead translates correctly");
  assert.equal(languages[1].attrs["aria-pressed"],"true","EN is visibly and accessibly selected");
  assert.equal(languages[0].attrs["aria-pressed"],"false","PL is deselected");
  assert.equal(saved["earth-live-lang"],"en","Language choice is persisted");
  languages[0].fire("click");
  assert.equal(doc.documentElement.lang,"pl","PL button switches back");
+ assert.equal(byId("#strap").textContent,"✳  SYSTEM OBSERWACJI PLANETY  / 001","Switching to PL restores Polish masthead");
  assert.equal(languages[0].attrs["aria-pressed"],"true","PL is selected again");
  assert.equal(calls.markers.length,5,"Switching languages preserves globe markers");
  assert.equal(calls.paths.length,1,"Shared TopoJSON border arc decoded only once");
