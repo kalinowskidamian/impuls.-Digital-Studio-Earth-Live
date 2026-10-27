@@ -20,6 +20,7 @@ class FakeElement {
  getBoundingClientRect(){return {left:120,top:100,width:560,height:560};}
  querySelector(){return new FakeElement();}
  insertBefore(el,ref){
+  if(el===ref)return; // DOM insertBefore(node,node) is a no-op.
   if(el.parentNode){const siblings=el.parentNode.children;const at=siblings.indexOf(el);if(at>=0)siblings.splice(at,1);}
   const i=ref==null?this.children.length:this.children.indexOf(ref);
   if(i<0)throw new Error("Reference node is not a child");
