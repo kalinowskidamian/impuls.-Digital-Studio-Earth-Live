@@ -29,6 +29,8 @@ async function main(){
  const selectors=["all","earthquakes","wildfires","severeStorms","volcanoes","other"];
  const layers=selectors.map(layer=>{const e=new FakeElement();e.dataset.layer=layer;return e;});
  const days=[1,7,30].map(n=>{const e=new FakeElement();e.dataset.days=String(n);return e;});
+ const languages=["pl","en"].map(lang=>{const e=new FakeElement();e.dataset.lang=lang;return e;});
+ const saved={};
  const byId=s=>{if(!all.has(s))all.set(s,new FakeElement(s));return all.get(s);};
  const scripts=[],calls={markers:[],paths:[]},controls={autoRotate:false,autoRotateSpeed:0,enableDamping:false};
  const pendingTimers=new Map();let nextTimerId=0;
@@ -59,12 +61,12 @@ async function main(){
  ]};
  const world={type:"Topology",transform:{scale:[1,1],translate:[0,0]},arcs:[[[4,2],[2,3]]],objects:{countries:{geometries:[{arcs:[[0]]},{arcs:[[~0]]}]}}};
  const doc={documentElement:{lang:"pl"},hidden:false,querySelector:byId,
-  querySelectorAll:s=>s==="[data-layer]"||s===".layer"?layers:s==="[data-days]"?days:[],
+  querySelectorAll:s=>s==="[data-layer]"||s===".layer"?layers:s==="[data-days]"?days:s==="[data-lang]"?languages:[],
   createElement:tag=>new FakeElement(tag),
   head:{appendChild(node){scripts.push(node);}},
  };
  const context={document:doc,window:{addEventListener(){},Globe:undefined},
-  console,localStorage:{getItem(){return null;},setItem(){}},
+  console,localStorage:{getItem(k){return saved[k]??null;},setItem(k,v){saved[k]=v;}},
   ResizeObserver:class{observe(){}},
   AbortController,
   setTimeout(fn,delay){const id=++nextTimerId;pendingTimers.set(id,{fn,delay});return id;},
@@ -85,6 +87,17 @@ async function main(){
  assert.equal(calls.height,560,"Globe height must match its stage");
  assert.equal(byId("#globeWarning").hidden,true,"Successful init must clear old WebGL warning");
  assert.equal(calls.markers.length,5,"Default all-layer globe matches both API feeds");
+ assert.equal(languages[0].attrs["aria-pressed"],"true","PL active on initial render");
+ assert.equal(languages[1].attrs["aria-pressed"],"false","EN inactive on initial render");
+ languages[1].fire("click");
+ assert.equal(doc.documentElement.lang,"en","EN button changes application language");
+ assert.equal(languages[1].attrs["aria-pressed"],"true","EN is visibly and accessibly selected");
+ assert.equal(languages[0].attrs["aria-pressed"],"false","PL is deselected");
+ assert.equal(saved["earth-live-lang"],"en","Language choice is persisted");
+ languages[0].fire("click");
+ assert.equal(doc.documentElement.lang,"pl","PL button switches back");
+ assert.equal(languages[0].attrs["aria-pressed"],"true","PL is selected again");
+ assert.equal(calls.markers.length,5,"Switching languages preserves globe markers");
  assert.equal(calls.paths.length,1,"Shared TopoJSON border arc decoded only once");
  assert.equal(calls.paths[0].points.length,2);
  const maker=calls.createMarker;
