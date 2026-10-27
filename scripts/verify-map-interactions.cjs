@@ -31,6 +31,7 @@ async function main(){
  const days=[1,7,30].map(n=>{const e=new FakeElement();e.dataset.days=String(n);return e;});
  const byId=s=>{if(!all.has(s))all.set(s,new FakeElement(s));return all.get(s);};
  const scripts=[],calls={markers:[],paths:[]},controls={autoRotate:false,autoRotateSpeed:0,enableDamping:false};
+ const pendingTimers=new Map();let nextTimerId=0;
  const g = new Proxy({}, {get(_obj,key){
   if(key==="controls")return ()=>controls;
   if(key==="htmlElement")return (value)=>{calls.createMarker=value;return g;};
@@ -65,7 +66,10 @@ async function main(){
  const context={document:doc,window:{addEventListener(){},Globe:undefined},
   console,localStorage:{getItem(){return null;},setItem(){}},
   ResizeObserver:class{observe(){}},
-  AbortController,setTimeout(){return 1;},clearTimeout(){},setInterval(){return 1;},
+  AbortController,
+  setTimeout(fn,delay){const id=++nextTimerId;pendingTimers.set(id,{fn,delay});return id;},
+  clearTimeout(id){pendingTimers.delete(id);},
+  setInterval(){return 1;},
   matchMedia(){return {matches:false};},
   fetch:async (url)=>({ok:true,json:async()=>url.includes("earthquake.usgs.gov")?usgs:url.includes("eonet.gsfc")?nasa:world})
  };
@@ -86,18 +90,33 @@ async function main(){
  const maker=calls.createMarker;
  assert.equal(typeof maker,"function");
  const visual=calls.markers.map(x=>maker(x));
- assert.ok(visual.every(x=>x.className==="globe-marker"),"All incidents use the same marker design");
- assert.ok(visual.every(x=>x.textContent!==""));
- assert.equal(new Set(visual.map(x=>x.textContent)).size,4,"Every category has matching symbol");
+ assert.ok(visual.every(x=>x.className==="globe-pin"),"CSS2DRenderer owns stable anchor");
+ const buttons=visual.map(x=>x.children[0]);
+ assert.ok(buttons.every(x=>x.className==="globe-marker"),"All incidents use nested interactive button");
+ assert.ok(buttons.every(x=>x.textContent!==""));
+ assert.equal(new Set(buttons.map(x=>x.textContent)).size,4,"Every category has matching symbol");
+ const hoverRule=html.match(/\.globe-marker:hover[^{}]*\{([^}]*)\}/);
+ assert.ok(hoverRule,"Hover styling must exist");
+ assert.ok(!/\b(scale|transform)\s*:/.test(hoverRule[1]),"Hover must not modify element geometry");
  const earthquake=calls.markers.find(x=>x.category==="earthquakes");
- const quakeButton=maker(earthquake);
+ const quakeButton=maker(earthquake).children[0];
  assert.equal(quakeButton.textContent,"◈");
  quakeButton.fire("pointerenter",{pointerType:"mouse",clientX:350,clientY:330});
  assert.equal(controls.autoRotate,false,"Hover must pause globe");
+ assert.equal(controls.enableDamping,false,"Hover must disable residual camera inertia");
  assert.equal(byId("#globeTip").hidden,false,"Hover must show detail card");
  assert.match(byId("#globeTip").innerHTML,/California quake|Chile quake/);
  quakeButton.fire("pointerleave",{pointerType:"mouse"});
- assert.equal(controls.autoRotate,true,"Rotation resumes after hover");
+ assert.equal(controls.autoRotate,false,"Rotation must remain paused during short pointer gaps");
+ assert.equal(byId("#globeTip").hidden,false,"Card must not flicker on transient pointer exit");
+ quakeButton.fire("pointerenter",{pointerType:"mouse",clientX:350,clientY:330});
+ assert.equal(pendingTimers.size,0,"Re-enter cancels the pending rotation restart");
+ quakeButton.fire("pointerleave",{pointerType:"mouse"});
+ const release=[...pendingTimers.entries()].find(([_id,t])=>t.delay===220);
+ assert.ok(release,"Short hover release timer must exist");
+ pendingTimers.delete(release[0]);release[1].fn();
+ assert.equal(controls.autoRotate,true,"Rotation resumes when pointer truly leaves");
+ assert.equal(controls.enableDamping,true,"Damping resumes after hover");
  assert.equal(byId("#globeTip").hidden,true);
  for(const name of selectors.slice(1)){
   const layer=layers.find(x=>x.dataset.layer===name);
