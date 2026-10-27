@@ -54,6 +54,15 @@
 @media(max-width:380px){.studio-sup{display:none}.actions{gap:7px}.live{font-size:7px}}
 @media(max-width:1090px){.layout{grid-template-columns:270px minmax(0,1fr)}.right{grid-column:1/-1;max-height:none;min-height:0}.feed{display:grid;grid-template-columns:1fr 1fr;column-gap:18px}.detail{position:fixed;inset:0 0 0 auto;width:min(420px,100vw)}.strap{display:none}}
 @media(max-width:670px){.top{height:68px;padding:0 20px}.logo{font-size:17px}.logo em{font-size:20px}.live{font-size:8px}.actions{gap:12px}.layout{display:block}.left{padding:30px 24px}.intro{margin-bottom:26px}h1{font-size:47px;margin:18px 0 14px}.hint{margin-bottom:24px}.layers{grid-template-columns:1fr 1fr}.layer{border-color:#303750;font-size:11px;min-height:43px;gap:8px}.layer strong{font-size:14px;width:13px}.stats{margin-top:25px}.stage{min-height:440px}.right{padding:32px 24px}.feed{display:block}.detail{position:fixed;inset:0;width:100%;padding:27px}.foot{flex-direction:column;align-items:flex-start;padding:15px 23px;font-size:8px;gap:8px}.stage-top,.stage-bottom{left:17px;right:17px;font-size:8px}.control{right:14px}}
+/* Mobile detail cards live inside the event list, never stretch to its full height. */
+@media(max-width:670px){
+ .right .detail{position:relative;inset:auto;z-index:4;width:100%;min-width:0;max-height:min(82dvh,720px);flex:0 0 auto;overflow-y:auto;overscroll-behavior:contain;margin:12px 0 18px;padding:20px 17px 18px;border:1px solid #495a7e;border-radius:12px;box-shadow:0 18px 35px #0008;scroll-margin-block:15px}
+ .right .detail h3{font-size:clamp(21px,5.5vw,27px);margin:19px 0 12px}
+ .right .detail p{margin:0 0 10px}
+ .right .detail .metric{padding:12px 0}
+ .right .detail .source-link{display:block;position:sticky;bottom:0;margin-top:18px;padding:15px 12px;box-shadow:0 -8px 18px #0c1224}
+ .feed>.detail{margin:11px 0 20px}
+}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto!important}}
 </style>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
@@ -114,7 +123,7 @@ var dictionaries={
 pl:{strap:"✳  SYSTEM OBSERWACJI PLANETY  / 001",eyebrow:"ŻYJĄCA PLANETA",hero:"Ziemia.<br><em>Na żywo.</em>",intro:"Jedna planeta. Tysiące sygnałów. Odkrywaj naturalne zjawiska, które kształtują nasz świat.",time:"PRZEDZIAŁ CZASU",hints:{1:"Wydarzenia z ostatnich 24 godzin.",7:"Wydarzenia z ostatnich 7 dni.",30:"Wydarzenia z ostatnich 30 dni."},layer:"WARSTWY DANYCH",labels:{all:"Wszystkie zjawiska",earthquakes:"Trzęsienia ziemi",wildfires:"Pożary",severeStorms:"Burze i cyklony",volcanoes:"Wulkany",other:"Pozostałe zjawiska"},events:"ZDARZEŃ",quakes:"WSTRZĄSÓW M2.5+",stage:"◎ GLOBALNY MONITOR ZDARZEŃ",drag:"PRZECIĄGNIJ, ABY OBRÓCIĆ · SCROLL, ABY PRZYBLIŻYĆ",feedKicker:"STRUMIEŃ ZDARZEŃ",feedTitle:"Na radarze",feedSubtitle:"Najświeższe zjawiska z całego świata.",search:"Szukaj zdarzenia...",newest:"NAJNOWSZE ↓",live:"DANE NA ŻYWO",empty:"Brak zdarzeń dla wybranego filtra.",error:"Źródła danych niedostępne. Spróbuj odświeżyć.",partial:"DANE CZĘŚCIOWE",updated:"AKTUALIZACJA",results:"ZDARZEŃ",ago:"godz. temu",mins:"min temu",source:"ŹRÓDŁO",date:"DATA OBSERWACJI",coordinates:"WSPÓŁRZĘDNE",magnitude:"MAGNITUDA",depth:"GŁĘBOKOŚĆ",close:"ZAMKNIJ",link:"OTWÓRZ ŹRÓDŁO ↗",disclaimer:"DANE MOGĄ BYĆ OPÓŹNIONE · NIE SŁUŻĄ DO OSTRZEŻEŃ"},
 en:{strap:"✳  PLANETARY OBSERVATION SYSTEM  / 001",eyebrow:"THE LIVING PLANET",hero:"Earth.<br><em>In motion.</em>",intro:"One planet. Thousands of signals. Explore the natural events shaping our world.",time:"TIME WINDOW",hints:{1:"Events from the past 24 hours.",7:"Events from the past 7 days.",30:"Events from the past 30 days."},layer:"DATA LAYERS",labels:{all:"All phenomena",earthquakes:"Earthquakes",wildfires:"Wildfires",severeStorms:"Storms & cyclones",volcanoes:"Volcanoes",other:"Other events"},events:"EVENTS",quakes:"QUAKES M2.5+",stage:"◎ GLOBAL EVENT MONITOR",drag:"DRAG TO ROTATE · SCROLL TO ZOOM",feedKicker:"EVENT FEED",feedTitle:"On the radar",feedSubtitle:"Latest natural phenomena from around the world.",search:"Search an event...",newest:"NEWEST FIRST ↓",live:"LIVE DATA",empty:"No events match this filter.",error:"Data sources unavailable. Please refresh.",partial:"PARTIAL DATA",updated:"UPDATED",results:"RESULTS",ago:"hours ago",mins:"min ago",source:"SOURCE",date:"OBSERVED",coordinates:"COORDINATES",magnitude:"MAGNITUDE",depth:"DEPTH",close:"CLOSE",link:"VIEW ORIGINAL SOURCE ↗",disclaimer:"DATA MAY BE DELAYED · NOT FOR EMERGENCY WARNINGS"}
 };
-var state={days:1,layer:"all",query:"",lang:"pl",events:[],globe:null,loading:false,failed:false,errors:[],updated:0,request:0,controller:null,selected:null,hovered:null,hoverRelease:null};
+var state={days:1,layer:"all",query:"",lang:"pl",events:[],globe:null,loading:false,failed:false,errors:[],updated:0,request:0,controller:null,selected:null,hovered:null,hoverRelease:null,detailOrigin:"globe",detailMountedMobile:false};
 try{if(localStorage.getItem("earth-live-lang")==="en")state.lang="en";}catch(e){}
 var t=function(k){return dictionaries[state.lang][k];};
 function valid(lat,lng){return Number.isFinite(lat)&&Number.isFinite(lng)&&lat>=-90&&lat<=90&&lng>=-180&&lng<=180;}
@@ -128,7 +137,8 @@ function filtered(){return state.events.filter(function(e){return (state.layer==
 function relative(ms){var m=Math.max(0,Math.floor((Date.now()-ms)/60000));if(m<60)return m+" "+t("mins");if(m<1440)return Math.floor(m/60)+" "+t("ago");return new Intl.DateTimeFormat(state.lang==="pl"?"pl-PL":"en-GB",{day:"2-digit",month:"short"}).format(ms);}
 function render(){var counts={all:state.events.length,earthquakes:0,wildfires:0,severeStorms:0,volcanoes:0,other:0};state.events.forEach(function(e){counts[e.category]++;});Object.keys(counts).forEach(function(k){var node=$('[data-count="'+k+'"]');if(node)node.textContent=state.failed?"—":counts[k].toLocaleString();});$("#total").textContent=state.failed?"—":counts.all.toLocaleString();$("#quakes").textContent=state.failed?"—":counts.earthquakes.toLocaleString();
 var events=filtered(),feed=$("#feed");$("#results").textContent=events.length+" "+t("results");
-if(state.loading&&!state.events.length){feed.innerHTML='<div class="empty">● ● ●</div>';}else if(state.failed){feed.innerHTML='<div class="empty">'+safe(t("error"))+'</div>';}else if(!events.length){feed.innerHTML='<div class="empty">'+safe(t("empty"))+'</div>';}else{feed.replaceChildren();events.slice(0,150).forEach(function(e){var b=document.createElement("button"),color=colors[e.category]||colors.other;b.className="item";b.type="button";b.innerHTML='<span class="glyph" style="color:'+color+'">'+glyph[e.category]+'</span><span class="item-main"><span class="kind" style="color:'+color+'">'+safe(t("labels")[e.category])+(e.category==="earthquakes"?" / M"+e.mag.toFixed(1):"")+'</span><span class="item-title"></span><span class="item-meta"><span>'+safe(e.source)+'</span><span>'+safe(relative(e.ms))+'</span></span></span>';b.querySelector(".item-title").textContent=e.title;b.addEventListener("click",function(){detail(e);});feed.appendChild(b);});}
+if(state.loading&&!state.events.length){feed.innerHTML='<div class="empty">● ● ●</div>';}else if(state.failed){feed.innerHTML='<div class="empty">'+safe(t("error"))+'</div>';}else if(!events.length){feed.innerHTML='<div class="empty">'+safe(t("empty"))+'</div>';}else{feed.replaceChildren();events.slice(0,150).forEach(function(e){var b=document.createElement("button"),color=colors[e.category]||colors.other;b.className="item";b.type="button";b.innerHTML='<span class="glyph" style="color:'+color+'">'+glyph[e.category]+'</span><span class="item-main"><span class="kind" style="color:'+color+'">'+safe(t("labels")[e.category])+(e.category==="earthquakes"?" / M"+e.mag.toFixed(1):"")+'</span><span class="item-title"></span><span class="item-meta"><span>'+safe(e.source)+'</span><span>'+safe(relative(e.ms))+'</span></span></span>';b.querySelector(".item-title").textContent=e.title;b.dataset.eventId=e.id;b.addEventListener("click",function(){detail(e,"feed");});feed.appendChild(b);});}
+if(state.selected&&!$("#detail").hidden)positionDetail(false);
 if(state.failed)$("#update").textContent=t("error");else if(state.errors.length)$("#update").textContent=t("partial")+": "+state.errors.join(", ");else if(state.updated)$("#update").textContent=t("updated")+": "+new Intl.DateTimeFormat(state.lang==="pl"?"pl-PL":"en-GB",{hour:"2-digit",minute:"2-digit"}).format(state.updated)+" / USGS + NASA";else $("#update").textContent="CONNECTING...";
 if(state.globe){
   // The event feed and 3D map use the same filtered set.
@@ -139,8 +149,44 @@ if(state.globe){
   $("#markerStatus").textContent=(state.lang==="pl"?"ZNACZNIKI ":"MARKERS ")+markers.length.toLocaleString()+" / "+events.length.toLocaleString();
 }}
 function translate(){var d=dictionaries[state.lang];document.documentElement.lang=state.lang;$$("[data-lang]").forEach(function(b){var active=b.dataset.lang===state.lang;b.classList.toggle("active",active);b.setAttribute("aria-pressed",String(active));});$("#strap").textContent=d.strap;$("#eyebrow").textContent=d.eyebrow;$("#hero").innerHTML=d.hero;$("#intro").textContent=d.intro;$("#timeLabel").textContent=d.time;$("#hint").textContent=d.hints[state.days];$("#layerLabel").textContent=d.layer;Object.keys(d.labels).forEach(function(k){$("#l-"+k).textContent=d.labels[k];});$("#eventsLabel").textContent=d.events;$("#quakesLabel").textContent=d.quakes;$("#stageLabel").textContent=d.stage;$("#drag").textContent=d.drag;$("#feedKicker").textContent=d.feedKicker;$("#feedTitle").innerHTML=safe(d.feedTitle)+"<i>.</i>";$("#feedSubtitle").textContent=d.feedSubtitle;$("#search").placeholder=d.search;$("#newest").textContent=d.newest;$("#live").textContent=d.live;$("#disclaimer").textContent=d.disclaimer;render();if(state.selected)detail(state.selected);}
-function detail(e){state.selected=e;var div=$("#detail");div.hidden=false;var d=new Intl.DateTimeFormat(state.lang==="pl"?"pl-PL":"en-GB",{dateStyle:"long",timeStyle:"short"}).format(e.ms);var position=e.lat.toFixed(2)+"°, "+e.lng.toFixed(2)+"°";var rows=[[t("source"),e.source],[t("date"),d],[t("coordinates"),position]];if(e.category==="earthquakes"){rows.push([t("magnitude"),"M "+e.mag.toFixed(1)]);if(Number.isFinite(Number(e.depth)))rows.push([t("depth"),Number(e.depth).toFixed(1)+" km"]);}div.innerHTML='<div class="detail-head"><span>'+safe(t("labels")[e.category].toUpperCase())+'</span><button id="detailClose" type="button">✕ '+safe(t("close"))+'</button></div><h3></h3><p></p><div>'+rows.map(function(row){return '<div class="metric"><span>'+safe(row[0])+'</span><span>'+safe(row[1])+'</span></div>';}).join("")+'</div><a class="source-link" href="'+safe(e.url)+'" target="_blank" rel="noopener noreferrer">'+safe(t("link"))+'</a>';div.querySelector("h3").textContent=e.title;div.querySelector("p").textContent=e.description;div.querySelector("p").hidden=!e.description;$("#detailClose").addEventListener("click",closeDetail);if(state.globe){state.globe.controls().autoRotate=false;state.globe.pointOfView({lat:e.lat,lng:e.lng,altitude:1.65},900);}}
-function closeDetail(){state.selected=null;$("#detail").hidden=true;resumeRotation();}
+function positionDetail(shouldScroll){
+ var panel=$("#detail"),right=$(".right"),feed=$("#feed");
+ if(matchMedia("(max-width:670px)").matches){
+  if(state.detailOrigin==="feed"){
+   var anchor=Array.from(feed.children).find(function(row){return row.dataset&&row.dataset.eventId===state.selected.id;});
+   if(anchor)anchor.insertAdjacentElement("afterend",panel);
+   else right.insertBefore(panel,feed);
+  }else right.insertBefore(panel,feed);
+  state.detailMountedMobile=true;
+  if(shouldScroll&&typeof panel.scrollIntoView==="function"){
+   panel.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:state.detailOrigin==="globe"?"start":"nearest"});
+  }
+ }else if(state.detailMountedMobile){
+  right.insertBefore(panel,$("#update"));
+  state.detailMountedMobile=false;
+ }
+}
+function detail(e,origin){
+ state.detailOrigin=origin==="feed"?"feed":origin==="globe"?"globe":state.selected&&state.selected.id===e.id?state.detailOrigin:"globe";
+ state.selected=e;
+ var div=$("#detail");div.hidden=false;
+ var d=new Intl.DateTimeFormat(state.lang==="pl"?"pl-PL":"en-GB",{dateStyle:"long",timeStyle:"short"}).format(e.ms);
+ var position=e.lat.toFixed(2)+"°, "+e.lng.toFixed(2)+"°";
+ var rows=[[t("source"),e.source],[t("date"),d],[t("coordinates"),position]];
+ if(e.category==="earthquakes"){rows.push([t("magnitude"),"M "+e.mag.toFixed(1)]);if(Number.isFinite(Number(e.depth)))rows.push([t("depth"),Number(e.depth).toFixed(1)+" km"]);}
+ div.innerHTML='<div class="detail-head"><span>'+safe(t("labels")[e.category].toUpperCase())+'</span><button id="detailClose" type="button">✕ '+safe(t("close"))+'</button></div><h3></h3><p></p><div>'+rows.map(function(row){return '<div class="metric"><span>'+safe(row[0])+'</span><span>'+safe(row[1])+'</span></div>';}).join("")+'</div><a class="source-link" href="'+safe(e.url)+'" target="_blank" rel="noopener noreferrer">'+safe(t("link"))+'</a>';
+ div.querySelector("h3").textContent=e.title;
+ div.querySelector("p").textContent=e.description;div.querySelector("p").hidden=!e.description;
+ $("#detailClose").addEventListener("click",closeDetail);
+ positionDetail(!!origin);
+ if(state.globe){state.globe.controls().autoRotate=false;state.globe.pointOfView({lat:e.lat,lng:e.lng,altitude:1.65},900);}
+}
+function closeDetail(){
+ state.selected=null;
+ $("#detail").hidden=true;
+ if(state.detailMountedMobile){$(".right").insertBefore($("#detail"),$("#update"));state.detailMountedMobile=false;}
+ resumeRotation();
+}
 function setLayer(k){state.layer=k;$$(".layer").forEach(function(b){b.classList.toggle("active",b.dataset.layer===k);});if(state.selected&&!filtered().some(function(e){return e.id===state.selected.id;}))closeDetail();render();}
 async function load(){if(state.selected)closeDetail();hideHover();state.controller&&state.controller.abort();var controller=new AbortController(),id=++state.request;state.controller=controller;state.loading=true;state.failed=false;state.errors=[];state.events=[];render();var tm=setTimeout(function(){controller.abort();},14000);
 try{var urls={usgs:"https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_"+({1:"day",7:"week",30:"month"}[state.days])+".geojson",nasa:"https://eonet.gsfc.nasa.gov/api/v3/events?status=all&days="+state.days+"&limit=800"};
@@ -210,7 +256,7 @@ function eventMarker(data){
  element.addEventListener("pointerleave",function(){scheduleHoverRelease(element);});
  element.addEventListener("focus",function(){showHover(data,element);});
  element.addEventListener("blur",function(){if(state.hovered===element)hideHover();});
- element.addEventListener("click",function(e){e.stopPropagation();hideHover();detail(data);});
+ element.addEventListener("click",function(e){e.stopPropagation();hideHover();detail(data,"globe");});
  return anchor;
 }
 // Natural Earth small-scale country boundaries, encoded as 110m TopoJSON arcs.
@@ -302,6 +348,7 @@ function startGlobe(){
 $$("[data-days]").forEach(function(b){b.addEventListener("click",function(){var v=Number(b.dataset.days);if(state.days===v)return;state.days=v;$$("[data-days]").forEach(function(x){x.classList.toggle("active",x===b);});$("#hint").textContent=t("hints")[v];closeDetail();load();});});
 $$("[data-layer]").forEach(function(b){b.addEventListener("click",function(){setLayer(b.dataset.layer);});});
 $("#search").addEventListener("input",function(e){state.query=e.target.value.trim().toLowerCase();if(state.selected&&!filtered().some(function(row){return row.id===state.selected.id;}))closeDetail();render();});$$("[data-lang]").forEach(function(b){b.addEventListener("click",function(){var next=b.dataset.lang;if((next!=="pl"&&next!=="en")||next===state.lang)return;state.lang=next;try{localStorage.setItem("earth-live-lang",state.lang);}catch(e){}translate();});});$("#refresh").addEventListener("click",load);
+window.addEventListener("resize",function(){if(state.selected&&!$("#detail").hidden)positionDetail(false);});
 $("#plus").addEventListener("click",function(){if(state.globe){var v=state.globe.pointOfView();v.altitude=Math.max(.7,v.altitude*.75);state.globe.pointOfView(v,500);}});$("#minus").addEventListener("click",function(){if(state.globe){var v=state.globe.pointOfView();v.altitude=Math.min(5,v.altitude*1.3);state.globe.pointOfView(v,500);}});$("#reset").addEventListener("click",function(){closeDetail();if(state.globe)state.globe.pointOfView({lat:20,lng:15,altitude:2.2},900);});window.addEventListener("keydown",function(e){if(e.key==="Escape")closeDetail();});
 translate();load();loadGlobeLibrary();setInterval(function(){if(!document.hidden&&!state.loading)load();},300000);
 })();

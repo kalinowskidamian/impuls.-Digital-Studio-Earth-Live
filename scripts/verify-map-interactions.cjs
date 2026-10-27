@@ -11,7 +11,7 @@ class FakeElement {
  constructor(id="") {
   this.id=id;this.hidden=false;this.style={setProperty(){}};
   this.dataset={};this.textContent="";this.innerHTML="";this.value="";
-  this.attrs={};this.listeners={};this.children=[];
+  this.attrs={};this.listeners={};this.children=[];this.parentNode=null;this.scrollOptions=null;
   this.classList={values:new Set(),toggle:(k,v)=>{if(v)this.classList.values.add(k);else this.classList.values.delete(k);},add:k=>this.classList.values.add(k),remove:k=>this.classList.values.delete(k)};
  }
  addEventListener(type,listener){(this.listeners[type]??=[]).push(listener);}
@@ -19,9 +19,21 @@ class FakeElement {
  setAttribute(key,value){this.attrs[key]=value;}
  getBoundingClientRect(){return {left:120,top:100,width:560,height:560};}
  querySelector(){return new FakeElement();}
- appendChild(el){this.children.push(el);}
- replaceChildren(){this.children=[];}
- remove(){}
+ insertBefore(el,ref){
+  if(el.parentNode){const siblings=el.parentNode.children;const at=siblings.indexOf(el);if(at>=0)siblings.splice(at,1);}
+  const i=ref==null?this.children.length:this.children.indexOf(ref);
+  if(i<0)throw new Error("Reference node is not a child");
+  this.children.splice(i,0,el);el.parentNode=this;
+ }
+ appendChild(el){this.insertBefore(el,null);}
+ insertAdjacentElement(where,el){
+  if(where!=="afterend"||!this.parentNode)throw new Error("Invalid placement");
+  const siblings=this.parentNode.children;
+  this.parentNode.insertBefore(el,siblings[siblings.indexOf(this)+1]||null);
+ }
+ replaceChildren(){this.children.forEach(el=>el.parentNode=null);this.children=[];}
+ scrollIntoView(options){this.scrollOptions=options;}
+ remove(){if(this.parentNode){const i=this.parentNode.children.indexOf(this);if(i>=0)this.parentNode.children.splice(i,1);this.parentNode=null;}}
 }
 
 async function main(){
@@ -30,8 +42,11 @@ async function main(){
  const layers=selectors.map(layer=>{const e=new FakeElement();e.dataset.layer=layer;return e;});
  const days=[1,7,30].map(n=>{const e=new FakeElement();e.dataset.days=String(n);return e;});
  const languages=["pl","en"].map(lang=>{const e=new FakeElement();e.dataset.lang=lang;return e;});
- const saved={};
+ const saved={};let mobile=false;
+ const windowListeners={};
  const byId=s=>{if(!all.has(s))all.set(s,new FakeElement(s));return all.get(s);};
+ const right=byId(".right"),feedPanel=byId("#feed");
+ right.appendChild(feedPanel);right.appendChild(byId("#detail"));right.appendChild(byId("#update"));
  const scripts=[],calls={markers:[],paths:[]},controls={autoRotate:false,autoRotateSpeed:0,enableDamping:false};
  const pendingTimers=new Map();let nextTimerId=0;
  const g = new Proxy({}, {get(_obj,key){
@@ -65,14 +80,14 @@ async function main(){
   createElement:tag=>new FakeElement(tag),
   head:{appendChild(node){scripts.push(node);}},
  };
- const context={document:doc,window:{addEventListener(){},Globe:undefined},
+ const context={document:doc,window:{addEventListener(type,fn){windowListeners[type]=fn;},Globe:undefined},
   console,localStorage:{getItem(k){return saved[k]??null;},setItem(k,v){saved[k]=v;}},
   ResizeObserver:class{observe(){}},
   AbortController,
   setTimeout(fn,delay){const id=++nextTimerId;pendingTimers.set(id,{fn,delay});return id;},
   clearTimeout(id){pendingTimers.delete(id);},
   setInterval(){return 1;},
-  matchMedia(){return {matches:false};},
+  matchMedia(query){return {matches:query==="(max-width:670px)"&&mobile};},
   fetch:async (url)=>({ok:true,json:async()=>url.includes("earthquake.usgs.gov")?usgs:url.includes("eonet.gsfc")?nasa:world})
  };
  vm.runInNewContext(script[1],context,{filename:"index.html"});
@@ -137,6 +152,41 @@ async function main(){
  assert.equal(controls.autoRotate,true,"Rotation resumes when pointer truly leaves");
  assert.equal(controls.enableDamping,true,"Damping resumes after hover");
  assert.equal(byId("#globeTip").hidden,true);
+ // Mobile: opening a feed event inserts a compact card directly after the tapped row.
+ mobile=true;
+ const firstRow=feedPanel.children.find(row=>row.dataset&&row.dataset.eventId);
+ assert.ok(firstRow,"Feed must contain event rows");
+ firstRow.fire("click");
+ const panel=byId("#detail");
+ assert.equal(panel.parentNode,feedPanel,"Feed-triggered mobile card must be inside the feed");
+ assert.equal(feedPanel.children.indexOf(panel),feedPanel.children.indexOf(firstRow)+1,"Details must appear immediately after the chosen event");
+ assert.equal(panel.hidden,false);
+ assert.match(panel.innerHTML,/OTWÓRZ ŹRÓDŁO/,"Source link must be in the compact detail card");
+ assert.equal(panel.scrollOptions.block,"nearest","Feed selection must scroll only as much as needed");
+ // Switching languages must retain the card's source position through feed rebuild.
+ languages[1].fire("click");
+ const selectedRow=feedPanel.children.find(row=>row.dataset&&row.dataset.eventId===firstRow.dataset.eventId);
+ assert.ok(selectedRow);
+ assert.equal(feedPanel.children.indexOf(panel),feedPanel.children.indexOf(selectedRow)+1,"Inline placement must survive language switch");
+ languages[0].fire("click");
+ // Mobile: tapping a marker moves the same card to the start of the feed, not full screen.
+ quakeButton.fire("click",{pointerType:"touch"});
+ assert.equal(panel.parentNode,right,"Globe-triggered card must live above the feed");
+ assert.equal(right.children.indexOf(panel),right.children.indexOf(feedPanel)-1,"Globe details must appear before event list");
+ assert.equal(panel.scrollOptions.block,"start","Globe details must be scrolled into view at feed start");
+ // Close restores the original DOM so the desktop overlay continues to work.
+ byId("#detailClose").fire("click");
+ assert.equal(panel.hidden,true);
+ assert.equal(panel.parentNode,right,"Closing card restores panel to original container");
+ assert.equal(right.children.indexOf(panel),right.children.indexOf(byId("#update"))-1);
+ // Resizing with details open moves the card safely between desktop and mobile.
+ firstRow.fire("click");
+ mobile=false;windowListeners.resize();
+ assert.equal(panel.parentNode,right,"Desktop view restores overlay into right column");
+ mobile=true;windowListeners.resize();
+ assert.equal(panel.parentNode,feedPanel,"Returning to mobile puts the card beside its event");
+ byId("#detailClose").fire("click");
+ assert.equal(panel.hidden,true);
  for(const name of selectors.slice(1)){
   const layer=layers.find(x=>x.dataset.layer===name);
   layer.fire("click");
