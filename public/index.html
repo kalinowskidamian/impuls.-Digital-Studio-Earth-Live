@@ -18,7 +18,8 @@
 @media(max-width:670px){.top{height:68px;padding:0 20px}.logo{font-size:17px}.logo em{font-size:20px}.live{font-size:8px}.actions{gap:12px}.layout{display:block}.left{padding:30px 24px}.intro{margin-bottom:26px}h1{font-size:47px;margin:18px 0 14px}.hint{margin-bottom:24px}.layers{grid-template-columns:1fr 1fr}.layer{border-color:#303750;font-size:11px;min-height:43px;gap:8px}.layer strong{font-size:14px;width:13px}.stats{margin-top:25px}.stage{min-height:440px}.right{padding:32px 24px}.feed{display:block}.detail{position:fixed;inset:0;width:100%;padding:27px}.foot{flex-direction:column;align-items:flex-start;padding:15px 23px;font-size:8px;gap:8px}.stage-top,.stage-bottom{left:17px;right:17px;font-size:8px}.control{right:14px}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto!important}}
 </style>
-<script src="https://unpkg.com/globe.gl@2.27.1/dist/globe.gl.min.js" defer></script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://unpkg.com" crossorigin>
 </head>
 <body>
 <div class="shell">
@@ -98,13 +99,43 @@ try{var urls={usgs:"https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.
 var requests=await Promise.allSettled([fetch(urls.usgs,{signal:controller.signal}).then(function(r){if(!r.ok)throw Error("USGS HTTP "+r.status);return r.json();}).then(qData),fetch(urls.nasa,{signal:controller.signal}).then(function(r){if(!r.ok)throw Error("NASA HTTP "+r.status);return r.json();}).then(nData)]);if(id!==state.request)return;
 state.events=[];if(requests[0].status==="fulfilled")state.events.push.apply(state.events,requests[0].value);else state.errors.push("USGS");if(requests[1].status==="fulfilled")state.events.push.apply(state.events,requests[1].value);else state.errors.push("NASA EONET");state.failed=state.errors.length===2;state.events.sort(function(a,b){return b.ms-a.ms;});state.updated=Date.now();
 }catch(err){if(id!==state.request)return;state.failed=true;console.error(err);}finally{clearTimeout(tm);if(id===state.request){state.loading=false;render();}}}
-function startGlobe(){if(typeof window.Globe!=="function"){$("#globeWarning").hidden=false;return;}try{var host=$("#globe"),g=window.Globe({rendererConfig:{antialias:true,alpha:true}})(host).globeImageUrl("https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg").bumpImageUrl("https://unpkg.com/three-globe/example/img/earth-topology.png").backgroundColor("rgba(0,0,0,0)").showAtmosphere(true).atmosphereColor("#7cc5f0").atmosphereAltitude(.17).pointColor(function(e){return colors[e.category]||colors.other;}).pointLat("lat").pointLng("lng").pointAltitude(.014).pointRadius(function(e){return e.category==="earthquakes"?Math.min(1.2,Math.max(.2,.2+(e.mag-2.5)*.18)):.4;}).pointResolution(9).pointLabel(function(e){return safe(e.title);}).onPointClick(function(e){detail(e);}).ringLat("lat").ringLng("lng").ringColor(function(e){return [colors[e.category]+"aa",colors[e.category]+"08"];}).ringMaxRadius(3.5).ringPropagationSpeed(.7).ringRepeatPeriod(3100);
-state.globe=g;g.controls().autoRotate=!matchMedia("(prefers-reduced-motion: reduce)").matches;g.controls().autoRotateSpeed=.33;g.controls().enableDamping=true;g.pointOfView({lat:20,lng:15,altitude:2.2},0);var resize=function(){var r=host.getBoundingClientRect();if(r.width&&r.height)g.width(r.width).height(r.height);};new ResizeObserver(resize).observe(host);resize();render();}catch(e){$("#globeWarning").hidden=false;console.warn(e);}}
+function showGlobeError(reason,error){
+var warning=$("#globeWarning");warning.hidden=false;
+warning.textContent=state.lang==="pl"?"Nie udało się uruchomić globusa 3D. Sprawdź obsługę WebGL lub połączenie sieciowe.":"3D globe unavailable. Check your WebGL support or network connection.";
+console.error("[Earth Live] "+reason,error||"");
+}
+function loadGlobeLibrary(){
+var urls=["https://cdn.jsdelivr.net/npm/globe.gl@2.27.1/dist/globe.gl.min.js","https://unpkg.com/globe.gl@2.27.1/dist/globe.gl.min.js"];
+var index=0;
+var warning=$("#globeWarning");
+warning.textContent=state.lang==="pl"?"Ładowanie globusa 3D...":"Loading 3D globe...";
+warning.hidden=false;
+function tryNext(){
+if(state.globe)return;
+if(typeof window.Globe==="function"){startGlobe();return;}
+if(index>=urls.length){showGlobeError("Both Globe.GL CDN sources failed");return;}
+var script=document.createElement("script"),finished=false;
+script.src=urls[index++];script.async=true;
+var timeout=setTimeout(function(){finish(false);},10000);
+function finish(loaded){
+if(finished)return;finished=true;clearTimeout(timeout);
+script.onload=null;script.onerror=null;
+if(loaded&&typeof window.Globe==="function"){startGlobe();return;}
+script.remove();tryNext();
+}
+script.onload=function(){finish(true);};
+script.onerror=function(){finish(false);};
+document.head.appendChild(script);
+}
+tryNext();
+}
+function startGlobe(){if(state.globe)return;if(typeof window.Globe!=="function"){showGlobeError("Globe.GL library is unavailable");return;}try{var host=$("#globe"),g=window.Globe({rendererConfig:{antialias:true,alpha:true}})(host).globeImageUrl("https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg").bumpImageUrl("https://unpkg.com/three-globe/example/img/earth-topology.png").backgroundColor("rgba(0,0,0,0)").showAtmosphere(true).atmosphereColor("#7cc5f0").atmosphereAltitude(.17).pointColor(function(e){return colors[e.category]||colors.other;}).pointLat("lat").pointLng("lng").pointAltitude(.014).pointRadius(function(e){return e.category==="earthquakes"?Math.min(1.2,Math.max(.2,.2+(e.mag-2.5)*.18)):.4;}).pointResolution(9).pointLabel(function(e){return safe(e.title);}).onPointClick(function(e){detail(e);}).ringLat("lat").ringLng("lng").ringColor(function(e){return [colors[e.category]+"aa",colors[e.category]+"08"];}).ringMaxRadius(3.5).ringPropagationSpeed(.7).ringRepeatPeriod(3100);
+state.globe=g;g.controls().autoRotate=!matchMedia("(prefers-reduced-motion: reduce)").matches;g.controls().autoRotateSpeed=.33;g.controls().enableDamping=true;g.pointOfView({lat:20,lng:15,altitude:2.2},0);var resize=function(){var r=host.getBoundingClientRect();if(r.width&&r.height)g.width(r.width).height(r.height);};new ResizeObserver(resize).observe(host);resize();render();$("#globeWarning").hidden=true;}catch(e){state.globe=null;showGlobeError("WebGL initialization failed",e);}}
 $$("[data-days]").forEach(function(b){b.addEventListener("click",function(){var v=Number(b.dataset.days);if(state.days===v)return;state.days=v;$$("[data-days]").forEach(function(x){x.classList.toggle("active",x===b);});$("#hint").textContent=t("hints")[v];closeDetail();load();});});
 $$("[data-layer]").forEach(function(b){b.addEventListener("click",function(){setLayer(b.dataset.layer);});});
 $("#search").addEventListener("input",function(e){state.query=e.target.value.trim().toLowerCase();render();});$("#language").addEventListener("click",function(){state.lang=state.lang==="pl"?"en":"pl";try{localStorage.setItem("earth-live-lang",state.lang);}catch(e){}translate();});$("#refresh").addEventListener("click",load);
 $("#plus").addEventListener("click",function(){if(state.globe){var v=state.globe.pointOfView();v.altitude=Math.max(.7,v.altitude*.75);state.globe.pointOfView(v,500);}});$("#minus").addEventListener("click",function(){if(state.globe){var v=state.globe.pointOfView();v.altitude=Math.min(5,v.altitude*1.3);state.globe.pointOfView(v,500);}});$("#reset").addEventListener("click",function(){closeDetail();if(state.globe)state.globe.pointOfView({lat:20,lng:15,altitude:2.2},900);});window.addEventListener("keydown",function(e){if(e.key==="Escape")closeDetail();});
-translate();startGlobe();load();setInterval(function(){if(!document.hidden&&!state.loading)load();},300000);
+translate();load();loadGlobeLibrary();setInterval(function(){if(!document.hidden&&!state.loading)load();},300000);
 })();
 </script>
 </body>
