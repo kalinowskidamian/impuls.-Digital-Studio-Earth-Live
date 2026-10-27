@@ -16,3 +16,5 @@ jobs:
         uses: actions/checkout@v4
       - name: Validate static application JavaScript
         run: node scripts/validate-inline-js.cjs
+      - name: Test 3D library bootstrap and CDN failover
+        run: node scripts/verify-globe-bootstrap.cjs
