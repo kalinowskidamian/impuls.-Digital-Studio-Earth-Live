@@ -49,6 +49,12 @@ Otwórz `http://localhost:4173`. Nie uruchamiaj bezpośrednio przez `file://`.
 
 Po zaakceptowaniu QA zmerguj `QA` do `main` i dopiero wtedy skonfiguruj domenę produkcyjną.
 
+## Checklist pierwszego podglądu QA
+
+Po ponownym połączeniu repozytorium z Cloudflare Workers Builds nowy commit do `QA` powinien automatycznie rozpocząć Preview Build. Sprawdź w Cloudflare **Deployments → Builds → Preview branches**; po udanym wdrożeniu podgląd pojawi się w rozwijanym menu obok Production.
+
+Test akceptacyjny: (1) ładuje się globus, (2) USGS i NASA dostarczają zdarzenia, (3) działają filtry, (4) szczegóły otwierają właściwe źródło, (5) interfejs działa na telefonie. Brak pierwszego Preview mimo commita oznacza, że trzeba zweryfikować ustawienia połączenia Git i Preview Builds po stronie Cloudflare.
+
 ## Zewnętrzne źródła
 
 - NASA EONET v3: https://eonet.gsfc.nasa.gov/docs/v3
