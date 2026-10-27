@@ -16,8 +16,10 @@
 .feed-head{display:flex;align-items:center;justify-content:space-between}.kicker{font:10px "DM Mono",monospace;color:var(--mint);letter-spacing:1.2px}.feed-head h2{font:600 29px "Space Grotesk",sans-serif;letter-spacing:-1px;margin:12px 0 0}.feed-head h2 i{font-style:normal;color:var(--mint)}.refresh{border:1px solid #333d57;border-radius:7px;background:transparent;color:#c7d1eb;width:39px;height:39px;font-size:24px}.feed-sub{font-size:11px;color:#8c98b3;margin:18px 0 22px}.search{width:100%;height:43px;border:1px solid #343e5a;border-radius:7px;background:#070c1c;color:white;padding:0 15px;font-size:12px}.feed-label{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #343b55;margin-top:25px;padding-bottom:15px;font:9px "DM Mono",monospace;color:#909bb7}.feed{overflow:auto;min-height:210px;flex:1;scrollbar-width:thin;scrollbar-color:#394565 transparent}.item{display:flex;gap:13px;width:100%;padding:17px 4px;border:0;border-bottom:1px solid #263049;background:transparent;text-align:left;color:#e2e8f7}.item:hover{background:#29294660}.glyph{flex:0 0 33px;height:33px;border:1px solid currentColor;border-radius:7px;display:grid;place-items:center;font-size:17px}.item-main{min-width:0;display:flex;flex-direction:column;gap:7px;flex:1}.kind{font:9px "DM Mono",monospace;letter-spacing:.5px}.item-title{font:500 13px/1.45 "Space Grotesk",sans-serif;overflow-wrap:anywhere}.item-meta{display:flex;gap:10px;justify-content:space-between;color:#7f8ca8;font:9px "DM Mono",monospace}.feed-foot{border-top:1px solid #343b55;padding-top:16px;font:9px "DM Mono",monospace;color:#8d99b1}.detail{position:absolute;inset:0;z-index:9;background:#0c1224;padding:32px;overflow:auto;display:flex;flex-direction:column;box-shadow:-15px 0 35px #0007}.detail[hidden]{display:none}.detail-head{display:flex;justify-content:space-between;color:var(--mint);font:10px "DM Mono",monospace}.detail-head button{border:1px solid #48516e;background:transparent;color:white;border-radius:5px;padding:8px 11px}.detail h3{font:600 31px/1.15 "Space Grotesk",sans-serif;letter-spacing:-1px;margin:50px 0 22px}.detail p{color:#9caac3;font-size:13px;line-height:1.8}.metric{border-bottom:1px solid #323a53;display:flex;justify-content:space-between;gap:12px;padding:17px 0;font:10px "DM Mono",monospace}.metric span:first-child{color:#7787a7}.metric span:last-child{text-align:right}.source-link{background:linear-gradient(90deg,#aaaafa,#88e6ca);color:#09101e;text-align:center;padding:17px;border-radius:6px;font:11px "DM Mono",monospace;margin-top:auto}.source-link:hover{color:#071322}.empty{padding:35px 8px;color:#a3adc9;font-size:12px;line-height:1.8;text-align:center}.foot{min-height:47px;display:flex;align-items:center;justify-content:space-between;gap:20px;background:#070a14;border-top:1px solid #30344e;padding:0 3vw;color:#8b96ae;font-size:9px}
 
 /* Premium lightweight 3D incident markers and non-interactive hover card */
-.globe-marker{--marker-color:#aaa3ff;display:grid;place-items:center;width:31px;height:31px;padding:0;border:1px solid color-mix(in srgb,var(--marker-color) 67%,transparent);border-radius:50%;background:#0b1427d9;color:var(--marker-color);box-shadow:0 0 0 3px #06122488,0 0 13px color-mix(in srgb,var(--marker-color) 30%,transparent);font:600 21px/1 "DM Sans",sans-serif;cursor:pointer;pointer-events:auto;transform:translateZ(0);transition:background .16s ease,border-color .16s ease,box-shadow .16s ease,scale .16s ease}
-.globe-marker:hover,.globe-marker:focus-visible,.globe-marker.is-hovered{scale:1.22;background:#172240;color:#fff;border-color:var(--marker-color);box-shadow:0 0 0 4px color-mix(in srgb,var(--marker-color) 21%,transparent),0 0 22px color-mix(in srgb,var(--marker-color) 48%,transparent);z-index:5}
+.globe-pin{display:grid;place-items:center;width:36px;height:36px;pointer-events:none}
+.globe-marker{--marker-color:#aaa3ff;display:grid;place-items:center;width:36px;height:36px;padding:0;border:1px solid color-mix(in srgb,var(--marker-color) 67%,transparent);border-radius:50%;background:#0b1427df;color:var(--marker-color);box-shadow:0 0 0 3px #06122488,0 0 13px color-mix(in srgb,var(--marker-color) 30%,transparent);font:600 21px/1 "DM Sans",sans-serif;cursor:pointer;pointer-events:auto;transition:background .16s ease,border-color .16s ease,box-shadow .16s ease}
+/* Keep the CSS2DRenderer anchor and its hitbox fixed: no scale or transform on hover. */
+.globe-marker:hover,.globe-marker:focus-visible,.globe-marker.is-hovered{background:#172240;color:#fff;border-color:var(--marker-color);box-shadow:0 0 0 5px color-mix(in srgb,var(--marker-color) 18%,transparent),0 0 24px color-mix(in srgb,var(--marker-color) 46%,transparent)}
 .globe-marker:focus-visible{outline:2px solid #fff;outline-offset:4px}
 .globe-tip{position:absolute;z-index:8;pointer-events:none;width:min(278px,calc(100% - 22px));border:1px solid #606d93ac;border-radius:10px;background:#0b1225f2;padding:15px 17px 14px;box-shadow:0 16px 40px #000b,0 0 32px #7f9ce91a;backdrop-filter:blur(16px);color:#e9edff}
 .globe-tip[hidden]{display:none}
@@ -84,7 +86,7 @@ var dictionaries={
 pl:{eyebrow:"ŻYJĄCA PLANETA",hero:"Ziemia.<br><em>Na żywo.</em>",intro:"Jedna planeta. Tysiące sygnałów. Odkrywaj naturalne zjawiska, które kształtują nasz świat.",time:"PRZEDZIAŁ CZASU",hints:{1:"Wydarzenia z ostatnich 24 godzin.",7:"Wydarzenia z ostatnich 7 dni.",30:"Wydarzenia z ostatnich 30 dni."},layer:"WARSTWY DANYCH",labels:{all:"Wszystkie zjawiska",earthquakes:"Trzęsienia ziemi",wildfires:"Pożary",severeStorms:"Burze i cyklony",volcanoes:"Wulkany",other:"Pozostałe zjawiska"},events:"ZDARZEŃ",quakes:"WSTRZĄSÓW M2.5+",stage:"◎ GLOBALNY MONITOR ZDARZEŃ",drag:"PRZECIĄGNIJ, ABY OBRÓCIĆ · SCROLL, ABY PRZYBLIŻYĆ",feedKicker:"STRUMIEŃ / SYGNAŁÓW",feedTitle:"Na radarze",feedSubtitle:"Najświeższe zjawiska z całego świata.",search:"Szukaj zdarzenia...",newest:"NAJNOWSZE ↓",live:"DANE NA ŻYWO",empty:"Brak zdarzeń dla wybranego filtra.",error:"Źródła danych niedostępne. Spróbuj odświeżyć.",partial:"DANE CZĘŚCIOWE",updated:"AKTUALIZACJA",results:"ZDARZEŃ",ago:"godz. temu",mins:"min temu",source:"ŹRÓDŁO",date:"DATA OBSERWACJI",coordinates:"WSPÓŁRZĘDNE",magnitude:"MAGNITUDA",depth:"GŁĘBOKOŚĆ",close:"ZAMKNIJ",link:"OTWÓRZ ŹRÓDŁO ↗",disclaimer:"DANE MOGĄ BYĆ OPÓŹNIONE · NIE SŁUŻĄ DO OSTRZEŻEŃ"},
 en:{eyebrow:"THE LIVING PLANET",hero:"Earth.<br><em>In motion.</em>",intro:"One planet. Thousands of signals. Explore the natural events shaping our world.",time:"TIME WINDOW",hints:{1:"Events from the past 24 hours.",7:"Events from the past 7 days.",30:"Events from the past 30 days."},layer:"DATA LAYERS",labels:{all:"All phenomena",earthquakes:"Earthquakes",wildfires:"Wildfires",severeStorms:"Storms & cyclones",volcanoes:"Volcanoes",other:"Other events"},events:"EVENTS",quakes:"QUAKES M2.5+",stage:"◎ GLOBAL EVENT MONITOR",drag:"DRAG TO ROTATE · SCROLL TO ZOOM",feedKicker:"SIGNAL / FEED",feedTitle:"On the radar",feedSubtitle:"Latest natural phenomena from around the world.",search:"Search an event...",newest:"NEWEST FIRST ↓",live:"LIVE DATA",empty:"No events match this filter.",error:"Data sources unavailable. Please refresh.",partial:"PARTIAL DATA",updated:"UPDATED",results:"RESULTS",ago:"hours ago",mins:"min ago",source:"SOURCE",date:"OBSERVED",coordinates:"COORDINATES",magnitude:"MAGNITUDE",depth:"DEPTH",close:"CLOSE",link:"VIEW ORIGINAL SOURCE ↗",disclaimer:"DATA MAY BE DELAYED · NOT FOR EMERGENCY WARNINGS"}
 };
-var state={days:1,layer:"all",query:"",lang:"pl",events:[],globe:null,loading:false,failed:false,errors:[],updated:0,request:0,controller:null,selected:null,hovered:null};
+var state={days:1,layer:"all",query:"",lang:"pl",events:[],globe:null,loading:false,failed:false,errors:[],updated:0,request:0,controller:null,selected:null,hovered:null,hoverRelease:null};
 try{if(localStorage.getItem("earth-live-lang")==="en")state.lang="en";}catch(e){}
 var t=function(k){return dictionaries[state.lang][k];};
 function valid(lat,lng){return Number.isFinite(lat)&&Number.isFinite(lng)&&lat>=-90&&lat<=90&&lng>=-180&&lng<=180;}
@@ -119,12 +121,30 @@ state.events=[];if(requests[0].status==="fulfilled")state.events.push.apply(stat
 }catch(err){if(id!==state.request)return;state.failed=true;console.error(err);}finally{clearTimeout(tm);if(id===state.request){state.loading=false;render();}}}
 
 function resumeRotation(){
- if(state.globe)state.globe.controls().autoRotate=!state.hovered&&!state.selected&&!matchMedia("(prefers-reduced-motion: reduce)").matches;
+ if(!state.globe)return;
+ var paused=!!state.hovered||!!state.selected;
+ var controls=state.globe.controls();
+ controls.autoRotate=!paused&&!matchMedia("(prefers-reduced-motion: reduce)").matches;
+ // Disable residual OrbitControls damping while inspecting an event.
+ controls.enableDamping=!paused;
+}
+function cancelHoverRelease(){
+ if(state.hoverRelease!==null){clearTimeout(state.hoverRelease);state.hoverRelease=null;}
 }
 function hideHover(){
+ cancelHoverRelease();
  if(state.hovered){state.hovered.classList.remove("is-hovered");state.hovered=null;}
  $("#globeTip").hidden=true;
  resumeRotation();
+}
+function scheduleHoverRelease(element){
+ cancelHoverRelease();
+ if(state.hovered!==element)return;
+ // Avoid pointerenter/pointerleave oscillation caused by the last rotation frame.
+ state.hoverRelease=setTimeout(function(){
+  state.hoverRelease=null;
+  if(state.hovered===element)hideHover();
+ },220);
 }
 function positionHover(event,element){
  var rect=$(".stage").getBoundingClientRect();
@@ -137,6 +157,7 @@ function positionHover(event,element){
  var tooltip=$("#globeTip");tooltip.style.left=x+"px";tooltip.style.top=y+"px";
 }
 function showHover(eventData,element,event){
+ cancelHoverRelease();
  if(state.hovered&&state.hovered!==element)state.hovered.classList.remove("is-hovered");
  state.hovered=element;element.classList.add("is-hovered");
  var tooltip=$("#globeTip"),color=colors[eventData.category]||colors.other;
@@ -145,21 +166,24 @@ function showHover(eventData,element,event){
  '<div class="globe-tip-title">'+safe(eventData.title)+'</div>'+
  '<div class="globe-tip-meta"><span>'+safe(relative(eventData.ms))+'</span><span>'+safe(eventData.lat.toFixed(1)+"°, "+eventData.lng.toFixed(1)+"°")+'</span></div>';
  tooltip.hidden=false;positionHover(event,element);
- if(state.globe)state.globe.controls().autoRotate=false;
+ resumeRotation();
 }
 function eventMarker(data){
- var element=document.createElement("button");
+ // CSS2DRenderer owns the outer anchor's transform. Only the inner button is styled.
+ var anchor=document.createElement("div"),element=document.createElement("button");
+ anchor.className="globe-pin";
  element.type="button";element.className="globe-marker";
  element.textContent=glyph[data.category]||glyph.other;
  element.style.setProperty("--marker-color",colors[data.category]||colors.other);
  element.setAttribute("aria-label",t("labels")[data.category]+": "+data.title);
+ anchor.appendChild(element);
  element.addEventListener("pointerenter",function(e){if(e.pointerType!=="touch")showHover(data,element,e);});
  element.addEventListener("pointermove",function(e){if(state.hovered===element)positionHover(e,element);});
- element.addEventListener("pointerleave",function(){if(state.hovered===element)hideHover();});
+ element.addEventListener("pointerleave",function(){scheduleHoverRelease(element);});
  element.addEventListener("focus",function(){showHover(data,element);});
  element.addEventListener("blur",function(){if(state.hovered===element)hideHover();});
  element.addEventListener("click",function(e){e.stopPropagation();hideHover();detail(data);});
- return element;
+ return anchor;
 }
 // Natural Earth small-scale country boundaries, encoded as 110m TopoJSON arcs.
 // One shared arc is rendered once, even when two countries use it.
