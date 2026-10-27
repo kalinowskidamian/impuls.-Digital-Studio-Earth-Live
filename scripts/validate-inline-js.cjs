@@ -17,7 +17,12 @@ while ((m = scripts.exec(html)) !== null) {
 }
 assert.ok(inlineCount > 0, "No application JavaScript to check");
 
-for (const id of ["globe", "feed", "language", "refresh", "windows", "layers"]) {
+for (const id of ["globe", "feed", "refresh", "windows", "layers"]) {
   assert.ok(html.includes('id="' + id + '"'), "Required UI element missing: " + id);
 }
-console.log("QA PASS: " + inlineCount + " inline script(s) parse and the main UI elements exist.");
+for (const lang of ["pl", "en"]) {
+  assert.ok(html.includes('data-lang="' + lang + '"'), "Missing " + lang.toUpperCase() + " language choice");
+}
+assert.ok(html.includes('aria-label="Język / Language"'), "Missing accessible language switch");
+assert.ok(html.includes('aria-pressed="true"') && html.includes('aria-pressed="false"'), "Language switch must expose selected state");
+console.log("QA PASS: " + inlineCount + " inline script(s) parse, primary UI exists and PL/EN switch is accessible.");
