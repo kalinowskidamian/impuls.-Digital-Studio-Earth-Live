@@ -1,54 +1,58 @@
 # Earth Live — Żywa planeta
 
-A bilingual, interactive 3D globe showcasing live Earth signals. A project by **impuls. Digital Studio**.
+Interaktywny globus 3D z danymi NASA EONET i USGS, przygotowany przez **impuls. Digital Studio**.
 
-## Current status
+## Status gałęzi
 
-- `main`: protected by workflow convention — release branch, no application deployment yet.
-- `QA`: first functional application, implemented as standalone `index.html` for rapid testing.
+- `main`: gałąź docelowej produkcji. Na razie zawiera jedynie README; nie publikujemy wersji bez akceptacji QA.
+- `QA`: rozwijana aplikacja i jej konfiguracja do testowych wdrożeń (Cloudflare Workers Previews).
 
-## Features
+## Funkcje
 
-- Interactive 3D Earth (Globe.GL / Three.js), zoom, rotation and location markers.
-- **USGS** earthquakes M2.5+ from the last 24h / 7d / 30d.
-- **NASA EONET v3** curated natural events: wildfires, storms, volcanoes and others.
-- Combined feed, category filters, time windows, event search, details and original source links.
-- Polish and English, responsive desktop and mobile layout, refresh every 5 minutes.
-- Graceful handling of partial upstream outages; no mock events or API keys.
+- Interaktywny globus 3D (Globe.GL / Three.js), obracanie, zoom i oznaczenia.
+- Trzęsienia ziemi M2.5+ (USGS) i zjawiska naturalne (NASA EONET).
+- Filtry czasu 24h / 7d / 30d, kategorie, wyszukiwanie, szczegóły, linki do źródeł.
+- Języki PL/EN, układ desktop/mobile, odświeżanie co 5 minut.
+- Bez kluczy API. Aplikacja może działać bez własnego backendu.
 
-> **Not an emergency warning service.** These datasets are curated and near-real-time, not guaranteed instantaneous or exhaustive. The 24h/7d/30d filters use the agencies' own published observation/event window.
+Nie jest to system ostrzegania kryzysowego. Źródła nie gwarantują danych w czasie rzeczywistym.
 
-## Run
+## Struktura QA
 
-There is no build step. Serve the repository root over HTTP:
-
-```bash
-python3 -m http.server 4173
-# open http://localhost:4173
+```
+public/
+  index.html    # statyczna aplikacja
+  _headers      # nagłówki bezpieczeństwa Cloudflare
+wrangler.jsonc   # deklaruje katalog statycznych zasobów ./public
+README.md
 ```
 
-Opening index.html directly as a `file://` URL is not the intended test method.
+## Uruchamianie lokalne
 
-## Deploy as QA preview on Cloudflare Pages
+W katalogu repozytorium, na gałęzi `QA`:
 
-1. Create a **new** Cloudflare Pages project for this repo (do not overwrite the studio website).
-2. Connect GitHub repo `kalinowskidamian/impuls.-Digital-Studio-Earth-Live`.
-3. Select `main` as production branch; `QA` should be allowed for preview builds.
-4. Framework preset: `None`; build command: `exit 0` (or empty); output directory: `/`.
-5. `main` has only the README currently. QA contains the app. **Don't map a public production domain or merge to main before QA acceptance.**
-6. After acceptance, merge `QA` to `main`, and optionally point `earth-live.impulsdigitalstudio.com` to the Pages project.
+```bash
+python3 -m http.server 4173 --directory public
+```
 
-## Data and assets
+Otwórz `http://localhost:4173`. Nie uruchamiaj bezpośrednio przez `file://`.
+
+## Cloudflare Workers Builds (już wybrany w Cloudflare)
+
+- Root directory: `/`
+- Build command: *brak*
+- Deploy command (produkcja): `npx wrangler deploy`
+- Preview command (gałęzie testowe): `npx wrangler preview`
+- Konfiguracja statycznych plików: `wrangler.jsonc`, `assets.directory = "./public"`
+
+**Ważne:** obecny branch produkcyjny w Cloudflare to `main`. Ponieważ `main` nie zawiera aplikacji, jego build nie ma czego wdrażać. Włącz **preview builds** i otwieraj podglądy `QA`. Zmiana produkcyjnej gałęzi na `QA` nie jest potrzebna.
+
+Po zaakceptowaniu QA zmerguj `QA` do `main` i dopiero wtedy skonfiguruj domenę produkcyjną.
+
+## Zewnętrzne źródła
 
 - NASA EONET v3: https://eonet.gsfc.nasa.gov/docs/v3
-- USGS GeoJSON feeds: https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php
+- USGS GeoJSON: https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php
 - Globe.GL: https://globe.gl/
-- Earth texture: `three-globe` example asset served via UNPKG.
 
-The live app loads globe dependencies, imagery and fonts from third-party CDNs and data directly from NASA/USGS. No cookies or tracking scripts are included.
-
-## Roadmap
-
-- Move the QA proof of concept into separate ES modules, tests and a coherent asset pipeline.
-- Add Cloudflare Worker caching/rate protection before any higher-traffic production launch.
-- Review data licensing, operational monitoring and privacy documentation for the planned public address.
+Aplikacja ładuje też zależności JS, fonty i teksturę globusa z zewnętrznych CDN. Nie zawiera skryptów analitycznych ani cookies.
