@@ -29,6 +29,7 @@ function createHarness() {
   }
 
   const document = {
+    documentElement: { lang: "pl" },
     querySelector: element,
     querySelectorAll() { return []; },
     createElement(tag) {
