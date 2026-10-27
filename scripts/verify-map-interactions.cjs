@@ -37,6 +37,15 @@ async function main(){
   if(key==="htmlElementsData")return (value)=>{calls.markers=value;return g;};
   if(key==="pathsData")return (value)=>{calls.paths=value;return g;};
   if(key==="pointOfView")return (...args)=>args.length?g:{lat:0,lng:0,altitude:2};
+  if(key==="width"||key==="height")return value=>{calls[key]=value;return g;};
+  const available=new Set([
+   "globeImageUrl","bumpImageUrl","backgroundColor","showAtmosphere",
+   "atmosphereColor","atmosphereAltitude","htmlLat","htmlLng","htmlAltitude",
+   "htmlTransitionDuration","pathPoints","pathPointLat","pathPointLng",
+   "pathPointAlt","pathColor","pathStroke","pathTransitionDuration"
+  ]);
+  // Deliberately refuse unknown Globe.GL methods (e.g. the invalid pathAltitude).
+  if(!available.has(key))throw new TypeError("Unknown Globe.GL API method: "+String(key));
   return ()=>g;
  }});
  const now=Date.now();
@@ -68,6 +77,9 @@ async function main(){
  if(typeof scripts[0].onload==="function")scripts[0].onload();
  await new Promise(resolve=>setTimeout(resolve,0));
  await new Promise(resolve=>setTimeout(resolve,0));
+ assert.equal(calls.width,560,"Globe must be resized to its own stage, not the whole browser");
+ assert.equal(calls.height,560,"Globe height must match its stage");
+ assert.equal(byId("#globeWarning").hidden,true,"Successful init must clear old WebGL warning");
  assert.equal(calls.markers.length,5,"Default all-layer globe matches both API feeds");
  assert.equal(calls.paths.length,1,"Shared TopoJSON border arc decoded only once");
  assert.equal(calls.paths[0].points.length,2);
