@@ -5,7 +5,7 @@ const fs = require("node:fs");
 const vm = require("node:vm");
 
 const html = fs.readFileSync("public/index.html", "utf8");
-const match = html.match(/<script>([\\s\\S]*?)<\\/script>/);
+const match = html.match(/<script>([\s\S]*?)<\/script>/);
 assert.ok(match, "Inline Earth Live application script must exist");
 
 function createHarness() {
@@ -85,7 +85,7 @@ function createHarness() {
 {
   const app = createHarness();
   assert.equal(app.requestedScripts.length, 1);
-  assert.match(app.requestedScripts[0].src, /cdn\\.jsdelivr\\.net/);
+  assert.match(app.requestedScripts[0].src, /cdn\.jsdelivr\.net/);
   assert.equal(app.globeInstances, 0);
   app.setGlobeAvailable();
   app.requestedScripts[0].onload();
@@ -98,7 +98,7 @@ function createHarness() {
   const app = createHarness();
   app.requestedScripts[0].onerror();
   assert.equal(app.requestedScripts.length, 2);
-  assert.match(app.requestedScripts[1].src, /unpkg\\.com/);
+  assert.match(app.requestedScripts[1].src, /unpkg\.com/);
   app.setGlobeAvailable();
   app.requestedScripts[1].onload();
   assert.equal(app.globeInstances, 1, "Fallback CDN should initialize globe");
