@@ -14,6 +14,17 @@
 .layout{display:grid;grid-template-columns:minmax(270px,22%) minmax(0,1fr) minmax(290px,25%);flex:1;min-height:calc(100vh - 125px)}.left,.right{background:#0b1020d9;z-index:3;position:relative;backdrop-filter:blur(14px)}.left{border-right:1px solid #30304790;padding:42px 32px;display:flex;flex-direction:column}.right{border-left:1px solid #30304790;padding:41px 30px;display:flex;flex-direction:column;min-height:0;max-height:calc(100vh - 125px)}.eyebrow{color:var(--mint);display:flex;align-items:center;gap:11px}.eyebrow:before{content:"";width:20px;height:1px;background:var(--mint)}h1{font:600 clamp(42px,3.8vw,65px)/1.07 "Space Grotesk",sans-serif;letter-spacing:-3px;margin:26px 0 18px}h1 em{font-style:normal;font-weight:500;background:linear-gradient(90deg,#d0c8ff,#9599f1,#7be8cf);-webkit-background-clip:text;background-clip:text;color:transparent}.intro{font-size:13px;line-height:1.85;color:#a4adc6;margin:0 0 47px}.section-title{display:flex;align-items:center;justify-content:space-between;color:#cdd4ea;margin-bottom:17px}.section-title span{color:#5e6985}.window{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;padding:4px;background:#080d1b;border:1px solid #34344e;border-radius:8px}.window button{border:0;background:transparent;color:#8993b3;border-radius:5px;height:39px;font:11px "DM Mono",monospace}.window button.active{background:#292944;box-shadow:inset 0 0 0 1px #5e5b9a;color:#fff}.hint{color:#77829d;line-height:1.5;margin:14px 0 41px;letter-spacing:0}.layers{display:grid;gap:5px}.layer{display:flex;align-items:center;gap:12px;border:1px solid transparent;background:transparent;color:#a0a9c2;text-align:left;min-height:43px;border-radius:6px;padding:0 10px;font-size:12px}.layer.active,.layer:hover{background:#2928476b;border-color:#6962a04b;color:#fff}.layer strong{width:15px;font-size:18px;text-align:center;font-weight:400}.layer .count{margin-left:auto;color:#929cb9}.stats{display:flex;border:1px solid #323b5a;background:#161b3099;border-radius:8px;padding:21px 20px;justify-content:space-around;margin-top:auto}.stats>div{display:flex;flex-direction:column;gap:8px}.stats b{font:30px "Space Grotesk",sans-serif}.label{font-size:8px;color:#8b9ab7}.source{font-size:9px;margin:22px 0 0;color:#8892ad}.source a{border-bottom:1px solid #a4b0c5}
 .stage{min-height:630px;position:relative;overflow:hidden;background:radial-gradient(circle at 50% 50%,#192d4d,#0c162a 45%,#090f1e 80%)}.stage:before{content:"";position:absolute;width:min(87%,710px);aspect-ratio:1;top:50%;left:50%;transform:translate(-50%,-50%);border:1px dashed #8296cc28;border-radius:50%;pointer-events:none}.stage:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(to right,transparent 49.97%,#adb9e713 50%,transparent 50.03%),linear-gradient(to bottom,transparent 49.97%,#adb9e713 50%,transparent 50.03%)}#globe{position:absolute;inset:0;z-index:1}.stage-top,.stage-bottom{position:absolute;left:28px;right:28px;z-index:2;pointer-events:none;color:#98acca;font:9px "DM Mono",monospace;letter-spacing:1px}.stage-top{top:29px;display:flex;justify-content:space-between}.stage-bottom{bottom:28px}.control{position:absolute;right:25px;bottom:34px;z-index:3;display:flex;flex-direction:column;background:#0a1129d9;border:1px solid #50648b;border-radius:8px;padding:3px}.control button{border:0;color:#d6e1f5;background:transparent;font-size:22px;width:36px;height:38px}.control button:hover{background:#393e62}.globe-warning{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;text-align:center;max-width:280px;font-size:12px;color:#9ba6c6}
 .feed-head{display:flex;align-items:center;justify-content:space-between}.kicker{font:10px "DM Mono",monospace;color:var(--mint);letter-spacing:1.2px}.feed-head h2{font:600 29px "Space Grotesk",sans-serif;letter-spacing:-1px;margin:12px 0 0}.feed-head h2 i{font-style:normal;color:var(--mint)}.refresh{border:1px solid #333d57;border-radius:7px;background:transparent;color:#c7d1eb;width:39px;height:39px;font-size:24px}.feed-sub{font-size:11px;color:#8c98b3;margin:18px 0 22px}.search{width:100%;height:43px;border:1px solid #343e5a;border-radius:7px;background:#070c1c;color:white;padding:0 15px;font-size:12px}.feed-label{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #343b55;margin-top:25px;padding-bottom:15px;font:9px "DM Mono",monospace;color:#909bb7}.feed{overflow:auto;min-height:210px;flex:1;scrollbar-width:thin;scrollbar-color:#394565 transparent}.item{display:flex;gap:13px;width:100%;padding:17px 4px;border:0;border-bottom:1px solid #263049;background:transparent;text-align:left;color:#e2e8f7}.item:hover{background:#29294660}.glyph{flex:0 0 33px;height:33px;border:1px solid currentColor;border-radius:7px;display:grid;place-items:center;font-size:17px}.item-main{min-width:0;display:flex;flex-direction:column;gap:7px;flex:1}.kind{font:9px "DM Mono",monospace;letter-spacing:.5px}.item-title{font:500 13px/1.45 "Space Grotesk",sans-serif;overflow-wrap:anywhere}.item-meta{display:flex;gap:10px;justify-content:space-between;color:#7f8ca8;font:9px "DM Mono",monospace}.feed-foot{border-top:1px solid #343b55;padding-top:16px;font:9px "DM Mono",monospace;color:#8d99b1}.detail{position:absolute;inset:0;z-index:9;background:#0c1224;padding:32px;overflow:auto;display:flex;flex-direction:column;box-shadow:-15px 0 35px #0007}.detail[hidden]{display:none}.detail-head{display:flex;justify-content:space-between;color:var(--mint);font:10px "DM Mono",monospace}.detail-head button{border:1px solid #48516e;background:transparent;color:white;border-radius:5px;padding:8px 11px}.detail h3{font:600 31px/1.15 "Space Grotesk",sans-serif;letter-spacing:-1px;margin:50px 0 22px}.detail p{color:#9caac3;font-size:13px;line-height:1.8}.metric{border-bottom:1px solid #323a53;display:flex;justify-content:space-between;gap:12px;padding:17px 0;font:10px "DM Mono",monospace}.metric span:first-child{color:#7787a7}.metric span:last-child{text-align:right}.source-link{background:linear-gradient(90deg,#aaaafa,#88e6ca);color:#09101e;text-align:center;padding:17px;border-radius:6px;font:11px "DM Mono",monospace;margin-top:auto}.source-link:hover{color:#071322}.empty{padding:35px 8px;color:#a3adc9;font-size:12px;line-height:1.8;text-align:center}.foot{min-height:47px;display:flex;align-items:center;justify-content:space-between;gap:20px;background:#070a14;border-top:1px solid #30344e;padding:0 3vw;color:#8b96ae;font-size:9px}
+
+/* Premium lightweight 3D incident markers and non-interactive hover card */
+.globe-marker{--marker-color:#aaa3ff;display:grid;place-items:center;width:31px;height:31px;padding:0;border:1px solid color-mix(in srgb,var(--marker-color) 67%,transparent);border-radius:50%;background:#0b1427d9;color:var(--marker-color);box-shadow:0 0 0 3px #06122488,0 0 13px color-mix(in srgb,var(--marker-color) 30%,transparent);font:600 21px/1 "DM Sans",sans-serif;cursor:pointer;pointer-events:auto;transform:translateZ(0);transition:background .16s ease,border-color .16s ease,box-shadow .16s ease,scale .16s ease}
+.globe-marker:hover,.globe-marker:focus-visible,.globe-marker.is-hovered{scale:1.22;background:#172240;color:#fff;border-color:var(--marker-color);box-shadow:0 0 0 4px color-mix(in srgb,var(--marker-color) 21%,transparent),0 0 22px color-mix(in srgb,var(--marker-color) 48%,transparent);z-index:5}
+.globe-marker:focus-visible{outline:2px solid #fff;outline-offset:4px}
+.globe-tip{position:absolute;z-index:8;pointer-events:none;width:min(278px,calc(100% - 22px));border:1px solid #606d93ac;border-radius:10px;background:#0b1225f2;padding:15px 17px 14px;box-shadow:0 16px 40px #000b,0 0 32px #7f9ce91a;backdrop-filter:blur(16px);color:#e9edff}
+.globe-tip[hidden]{display:none}
+.globe-tip-kicker{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;font:9px "DM Mono",monospace;letter-spacing:.7px;text-transform:uppercase}
+.globe-tip-title{font:600 15px/1.35 "Space Grotesk",sans-serif;letter-spacing:-.2px;overflow-wrap:anywhere}
+.globe-tip-meta{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid #42506a70;margin-top:13px;padding-top:11px;font:10px "DM Mono",monospace;color:#a7b3cc}
+.globe-tip-meta span:last-child{white-space:nowrap}
 @media(max-width:1090px){.layout{grid-template-columns:270px minmax(0,1fr)}.right{grid-column:1/-1;max-height:none;min-height:0}.feed{display:grid;grid-template-columns:1fr 1fr;column-gap:18px}.detail{position:fixed;inset:0 0 0 auto;width:min(420px,100vw)}.strap{display:none}}
 @media(max-width:670px){.top{height:68px;padding:0 20px}.logo{font-size:17px}.logo em{font-size:20px}.live{font-size:8px}.actions{gap:12px}.layout{display:block}.left{padding:30px 24px}.intro{margin-bottom:26px}h1{font-size:47px;margin:18px 0 14px}.hint{margin-bottom:24px}.layers{grid-template-columns:1fr 1fr}.layer{border-color:#303750;font-size:11px;min-height:43px;gap:8px}.layer strong{font-size:14px;width:13px}.stats{margin-top:25px}.stage{min-height:440px}.right{padding:32px 24px}.feed{display:block}.detail{position:fixed;inset:0;width:100%;padding:27px}.foot{flex-direction:column;align-items:flex-start;padding:15px 23px;font-size:8px;gap:8px}.stage-top,.stage-bottom{left:17px;right:17px;font-size:8px}.control{right:14px}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto!important}}
@@ -48,8 +59,8 @@
 <div class="stats"><div><b id="total">—</b><span class="label" id="eventsLabel">ZDARZEŃ</span></div><div><b id="quakes">—</b><span class="label" id="quakesLabel">WSTRZĄSÓW M2.5+</span></div></div>
 <div class="source">DATA: <a href="https://eonet.gsfc.nasa.gov/" target="_blank" rel="noopener noreferrer">NASA EONET</a> × <a href="https://earthquake.usgs.gov/" target="_blank" rel="noopener noreferrer">USGS</a></div>
 </aside>
-<section class="stage"><div class="stage-top"><span id="stageLabel">◎ GLOBALNY MONITOR ZDARZEŃ</span><span>3D / 360°</span></div>
-<div id="globe"></div><p class="globe-warning" id="globeWarning" hidden>3D unavailable. The event feed remains active.</p>
+<section class="stage"><div class="stage-top"><span id="stageLabel">◎ GLOBALNY MONITOR ZDARZEŃ</span><span id="markerStatus">3D / 360°</span></div>
+<div id="globe"></div><div class="globe-tip" id="globeTip" hidden></div><p class="globe-warning" id="globeWarning" hidden>3D unavailable. The event feed remains active.</p>
 <div class="control"><button id="plus" aria-label="Zoom in">+</button><button id="minus" aria-label="Zoom out">−</button><button id="reset" aria-label="Reset view">⟲</button></div>
 <div class="stage-bottom" id="drag">PRZECIĄGNIJ, ABY OBRÓCIĆ · SCROLL, ABY PRZYBLIŻYĆ</div></section>
 <aside class="right"><div class="feed-head"><div><span class="kicker" id="feedKicker">STRUMIEŃ / SYGNAŁÓW</span><h2 id="feedTitle">Na radarze<i>.</i></h2></div><button class="refresh" id="refresh" aria-label="Refresh">↻</button></div>
@@ -73,7 +84,7 @@ var dictionaries={
 pl:{eyebrow:"ŻYJĄCA PLANETA",hero:"Ziemia.<br><em>Na żywo.</em>",intro:"Jedna planeta. Tysiące sygnałów. Odkrywaj naturalne zjawiska, które kształtują nasz świat.",time:"PRZEDZIAŁ CZASU",hints:{1:"Wydarzenia z ostatnich 24 godzin.",7:"Wydarzenia z ostatnich 7 dni.",30:"Wydarzenia z ostatnich 30 dni."},layer:"WARSTWY DANYCH",labels:{all:"Wszystkie zjawiska",earthquakes:"Trzęsienia ziemi",wildfires:"Pożary",severeStorms:"Burze i cyklony",volcanoes:"Wulkany",other:"Pozostałe zjawiska"},events:"ZDARZEŃ",quakes:"WSTRZĄSÓW M2.5+",stage:"◎ GLOBALNY MONITOR ZDARZEŃ",drag:"PRZECIĄGNIJ, ABY OBRÓCIĆ · SCROLL, ABY PRZYBLIŻYĆ",feedKicker:"STRUMIEŃ / SYGNAŁÓW",feedTitle:"Na radarze",feedSubtitle:"Najświeższe zjawiska z całego świata.",search:"Szukaj zdarzenia...",newest:"NAJNOWSZE ↓",live:"DANE NA ŻYWO",empty:"Brak zdarzeń dla wybranego filtra.",error:"Źródła danych niedostępne. Spróbuj odświeżyć.",partial:"DANE CZĘŚCIOWE",updated:"AKTUALIZACJA",results:"ZDARZEŃ",ago:"godz. temu",mins:"min temu",source:"ŹRÓDŁO",date:"DATA OBSERWACJI",coordinates:"WSPÓŁRZĘDNE",magnitude:"MAGNITUDA",depth:"GŁĘBOKOŚĆ",close:"ZAMKNIJ",link:"OTWÓRZ ŹRÓDŁO ↗",disclaimer:"DANE MOGĄ BYĆ OPÓŹNIONE · NIE SŁUŻĄ DO OSTRZEŻEŃ"},
 en:{eyebrow:"THE LIVING PLANET",hero:"Earth.<br><em>In motion.</em>",intro:"One planet. Thousands of signals. Explore the natural events shaping our world.",time:"TIME WINDOW",hints:{1:"Events from the past 24 hours.",7:"Events from the past 7 days.",30:"Events from the past 30 days."},layer:"DATA LAYERS",labels:{all:"All phenomena",earthquakes:"Earthquakes",wildfires:"Wildfires",severeStorms:"Storms & cyclones",volcanoes:"Volcanoes",other:"Other events"},events:"EVENTS",quakes:"QUAKES M2.5+",stage:"◎ GLOBAL EVENT MONITOR",drag:"DRAG TO ROTATE · SCROLL TO ZOOM",feedKicker:"SIGNAL / FEED",feedTitle:"On the radar",feedSubtitle:"Latest natural phenomena from around the world.",search:"Search an event...",newest:"NEWEST FIRST ↓",live:"LIVE DATA",empty:"No events match this filter.",error:"Data sources unavailable. Please refresh.",partial:"PARTIAL DATA",updated:"UPDATED",results:"RESULTS",ago:"hours ago",mins:"min ago",source:"SOURCE",date:"OBSERVED",coordinates:"COORDINATES",magnitude:"MAGNITUDE",depth:"DEPTH",close:"CLOSE",link:"VIEW ORIGINAL SOURCE ↗",disclaimer:"DATA MAY BE DELAYED · NOT FOR EMERGENCY WARNINGS"}
 };
-var state={days:1,layer:"all",query:"",lang:"pl",events:[],globe:null,loading:false,failed:false,errors:[],updated:0,request:0,controller:null,selected:null};
+var state={days:1,layer:"all",query:"",lang:"pl",events:[],globe:null,loading:false,failed:false,errors:[],updated:0,request:0,controller:null,selected:null,hovered:null};
 try{if(localStorage.getItem("earth-live-lang")==="en")state.lang="en";}catch(e){}
 var t=function(k){return dictionaries[state.lang][k];};
 function valid(lat,lng){return Number.isFinite(lat)&&Number.isFinite(lng)&&lat>=-90&&lat<=90&&lng>=-180&&lng<=180;}
@@ -89,16 +100,95 @@ function render(){var counts={all:state.events.length,earthquakes:0,wildfires:0,
 var events=filtered(),feed=$("#feed");$("#results").textContent=events.length+" "+t("results");
 if(state.loading&&!state.events.length){feed.innerHTML='<div class="empty">● ● ●</div>';}else if(state.failed){feed.innerHTML='<div class="empty">'+safe(t("error"))+'</div>';}else if(!events.length){feed.innerHTML='<div class="empty">'+safe(t("empty"))+'</div>';}else{feed.replaceChildren();events.slice(0,150).forEach(function(e){var b=document.createElement("button"),color=colors[e.category]||colors.other;b.className="item";b.type="button";b.innerHTML='<span class="glyph" style="color:'+color+'">'+glyph[e.category]+'</span><span class="item-main"><span class="kind" style="color:'+color+'">'+safe(t("labels")[e.category])+(e.category==="earthquakes"?" / M"+e.mag.toFixed(1):"")+'</span><span class="item-title"></span><span class="item-meta"><span>'+safe(e.source)+'</span><span>'+safe(relative(e.ms))+'</span></span></span>';b.querySelector(".item-title").textContent=e.title;b.addEventListener("click",function(){detail(e);});feed.appendChild(b);});}
 if(state.failed)$("#update").textContent=t("error");else if(state.errors.length)$("#update").textContent=t("partial")+": "+state.errors.join(", ");else if(state.updated)$("#update").textContent=t("updated")+": "+new Intl.DateTimeFormat(state.lang==="pl"?"pl-PL":"en-GB",{hour:"2-digit",minute:"2-digit"}).format(state.updated)+" / USGS + NASA";else $("#update").textContent="CONNECTING...";
-if(state.globe){var markers=events.slice(0,550);state.globe.pointsData(markers);state.globe.ringsData(markers.filter(function(e){return e.category!=="earthquakes"||e.mag>=4;}).slice(0,12));}}
+if(state.globe){
+  // The event feed and 3D map use the same filtered set.
+  // A hard display budget protects mobile performance; the counter is explicit.
+  var markers=events.slice(0,800);
+  hideHover();
+  state.globe.htmlElementsData(markers);
+  $("#markerStatus").textContent=(state.lang==="pl"?"ZNACZNIKI ":"MARKERS ")+markers.length.toLocaleString()+" / "+events.length.toLocaleString();
+}}
 function translate(){var d=dictionaries[state.lang];document.documentElement.lang=state.lang;$("#language").textContent=state.lang==="pl"?"EN ↗":"PL ↗";$("#eyebrow").textContent=d.eyebrow;$("#hero").innerHTML=d.hero;$("#intro").textContent=d.intro;$("#timeLabel").textContent=d.time;$("#hint").textContent=d.hints[state.days];$("#layerLabel").textContent=d.layer;Object.keys(d.labels).forEach(function(k){$("#l-"+k).textContent=d.labels[k];});$("#eventsLabel").textContent=d.events;$("#quakesLabel").textContent=d.quakes;$("#stageLabel").textContent=d.stage;$("#drag").textContent=d.drag;$("#feedKicker").textContent=d.feedKicker;$("#feedTitle").innerHTML=safe(d.feedTitle)+"<i>.</i>";$("#feedSubtitle").textContent=d.feedSubtitle;$("#search").placeholder=d.search;$("#newest").textContent=d.newest;$("#live").textContent=d.live;$("#disclaimer").textContent=d.disclaimer;render();if(state.selected)detail(state.selected);}
 function detail(e){state.selected=e;var div=$("#detail");div.hidden=false;var d=new Intl.DateTimeFormat(state.lang==="pl"?"pl-PL":"en-GB",{dateStyle:"long",timeStyle:"short"}).format(e.ms);var position=e.lat.toFixed(2)+"°, "+e.lng.toFixed(2)+"°";var rows=[[t("source"),e.source],[t("date"),d],[t("coordinates"),position]];if(e.category==="earthquakes"){rows.push([t("magnitude"),"M "+e.mag.toFixed(1)]);if(Number.isFinite(Number(e.depth)))rows.push([t("depth"),Number(e.depth).toFixed(1)+" km"]);}div.innerHTML='<div class="detail-head"><span>'+safe(t("labels")[e.category].toUpperCase())+'</span><button id="detailClose" type="button">✕ '+safe(t("close"))+'</button></div><h3></h3><p></p><div>'+rows.map(function(row){return '<div class="metric"><span>'+safe(row[0])+'</span><span>'+safe(row[1])+'</span></div>';}).join("")+'</div><a class="source-link" href="'+safe(e.url)+'" target="_blank" rel="noopener noreferrer">'+safe(t("link"))+'</a>';div.querySelector("h3").textContent=e.title;div.querySelector("p").textContent=e.description;div.querySelector("p").hidden=!e.description;$("#detailClose").addEventListener("click",closeDetail);if(state.globe){state.globe.controls().autoRotate=false;state.globe.pointOfView({lat:e.lat,lng:e.lng,altitude:1.65},900);}}
-function closeDetail(){state.selected=null;$("#detail").hidden=true;if(state.globe)state.globe.controls().autoRotate=true;}
-function setLayer(k){state.layer=k;$$(".layer").forEach(function(b){b.classList.toggle("active",b.dataset.layer===k);});render();}
-async function load(){state.controller&&state.controller.abort();var controller=new AbortController(),id=++state.request;state.controller=controller;state.loading=true;state.failed=false;state.errors=[];state.events=[];render();var tm=setTimeout(function(){controller.abort();},14000);
+function closeDetail(){state.selected=null;$("#detail").hidden=true;resumeRotation();}
+function setLayer(k){state.layer=k;$(".layer").forEach(function(b){b.classList.toggle("active",b.dataset.layer===k);});if(state.selected&&!filtered().some(function(e){return e.id===state.selected.id;}))closeDetail();render();}
+async function load(){if(state.selected)closeDetail();hideHover();state.controller&&state.controller.abort();var controller=new AbortController(),id=++state.request;state.controller=controller;state.loading=true;state.failed=false;state.errors=[];state.events=[];render();var tm=setTimeout(function(){controller.abort();},14000);
 try{var urls={usgs:"https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_"+({1:"day",7:"week",30:"month"}[state.days])+".geojson",nasa:"https://eonet.gsfc.nasa.gov/api/v3/events?status=all&days="+state.days+"&limit=800"};
 var requests=await Promise.allSettled([fetch(urls.usgs,{signal:controller.signal}).then(function(r){if(!r.ok)throw Error("USGS HTTP "+r.status);return r.json();}).then(qData),fetch(urls.nasa,{signal:controller.signal}).then(function(r){if(!r.ok)throw Error("NASA HTTP "+r.status);return r.json();}).then(nData)]);if(id!==state.request)return;
 state.events=[];if(requests[0].status==="fulfilled")state.events.push.apply(state.events,requests[0].value);else state.errors.push("USGS");if(requests[1].status==="fulfilled")state.events.push.apply(state.events,requests[1].value);else state.errors.push("NASA EONET");state.failed=state.errors.length===2;state.events.sort(function(a,b){return b.ms-a.ms;});state.updated=Date.now();
 }catch(err){if(id!==state.request)return;state.failed=true;console.error(err);}finally{clearTimeout(tm);if(id===state.request){state.loading=false;render();}}}
+
+function resumeRotation(){
+ if(state.globe)state.globe.controls().autoRotate=!state.hovered&&!state.selected&&!matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+function hideHover(){
+ if(state.hovered){state.hovered.classList.remove("is-hovered");state.hovered=null;}
+ $("#globeTip").hidden=true;
+ resumeRotation();
+}
+function positionHover(event,element){
+ var rect=$(".stage").getBoundingClientRect();
+ var pos=element.getBoundingClientRect();
+ var pointerX=event&&typeof event.clientX==="number"?event.clientX:pos.left+pos.width/2;
+ var pointerY=event&&typeof event.clientY==="number"?event.clientY:pos.top;
+ var x=Math.max(10,Math.min(pointerX-rect.left+19,rect.width-289));
+ var y=pointerY-rect.top-156;
+ if(y<14)y=Math.min(rect.height-138,pointerY-rect.top+24);
+ var tooltip=$("#globeTip");tooltip.style.left=x+"px";tooltip.style.top=y+"px";
+}
+function showHover(eventData,element,event){
+ if(state.hovered&&state.hovered!==element)state.hovered.classList.remove("is-hovered");
+ state.hovered=element;element.classList.add("is-hovered");
+ var tooltip=$("#globeTip"),color=colors[eventData.category]||colors.other;
+ var magnitude=eventData.category==="earthquakes"?"M "+Number(eventData.mag).toFixed(1):"";
+ tooltip.innerHTML='<div class="globe-tip-kicker"><span style="color:'+color+'">'+safe(t("labels")[eventData.category])+'</span><span>'+safe(magnitude||eventData.source)+'</span></div>'+
+ '<div class="globe-tip-title">'+safe(eventData.title)+'</div>'+
+ '<div class="globe-tip-meta"><span>'+safe(relative(eventData.ms))+'</span><span>'+safe(eventData.lat.toFixed(1)+"°, "+eventData.lng.toFixed(1)+"°")+'</span></div>';
+ tooltip.hidden=false;positionHover(event,element);
+ if(state.globe)state.globe.controls().autoRotate=false;
+}
+function eventMarker(data){
+ var element=document.createElement("button");
+ element.type="button";element.className="globe-marker";
+ element.textContent=glyph[data.category]||glyph.other;
+ element.style.setProperty("--marker-color",colors[data.category]||colors.other);
+ element.setAttribute("aria-label",t("labels")[data.category]+": "+data.title);
+ element.addEventListener("pointerenter",function(e){if(e.pointerType!=="touch")showHover(data,element,e);});
+ element.addEventListener("pointermove",function(e){if(state.hovered===element)positionHover(e,element);});
+ element.addEventListener("pointerleave",function(){if(state.hovered===element)hideHover();});
+ element.addEventListener("focus",function(){showHover(data,element);});
+ element.addEventListener("blur",function(){if(state.hovered===element)hideHover();});
+ element.addEventListener("click",function(e){e.stopPropagation();hideHover();detail(data);});
+ return element;
+}
+// Natural Earth small-scale country boundaries, encoded as 110m TopoJSON arcs.
+// One shared arc is rendered once, even when two countries use it.
+function borderPaths(topology){
+ if(!topology||!topology.objects||!topology.objects.countries||!Array.isArray(topology.arcs)||!topology.transform)throw Error("Invalid country topology");
+ var unique=new Set();
+ function collect(arcs){if(typeof arcs==="number"){unique.add(arcs<0?~arcs:arcs);}else if(Array.isArray(arcs))arcs.forEach(collect);}
+ topology.objects.countries.geometries.forEach(function(geometry){if(geometry.arcs)collect(geometry.arcs);});
+ var transform=topology.transform;
+ return Array.from(unique).map(function(index){
+  var arc=topology.arcs[index];if(!Array.isArray(arc))return null;
+  var x=0,y=0;
+  var points=arc.map(function(pair){x+=pair[0];y+=pair[1];return [x*transform.scale[0]+transform.translate[0],y*transform.scale[1]+transform.translate[1]];});
+  return points.length>1?{points:points}:null;
+ }).filter(Boolean);
+}
+async function loadBorders(globe){
+ try{
+  var sources=["https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json","https://unpkg.com/world-atlas@2.0.2/countries-110m.json"];
+  for(var i=0;i<sources.length;i++){
+   try{
+    var response=await fetch(sources[i]);if(!response.ok)throw Error("HTTP "+response.status);
+    var paths=borderPaths(await response.json());
+    if(state.globe===globe)globe.pathsData(paths);
+    return;
+   }catch(error){if(i===sources.length-1)throw error;}
+  }
+ }catch(error){console.warn("[Earth Live] Country outlines unavailable; incident feed unaffected.",error);}
+}
 function showGlobeError(reason,error){
 var warning=$("#globeWarning");warning.hidden=false;
 warning.textContent=state.lang==="pl"?"Nie udało się uruchomić globusa 3D. Sprawdź obsługę WebGL lub połączenie sieciowe.":"3D globe unavailable. Check your WebGL support or network connection.";
@@ -129,11 +219,37 @@ document.head.appendChild(script);
 }
 tryNext();
 }
-function startGlobe(){if(state.globe)return;if(typeof window.Globe!=="function"){showGlobeError("Globe.GL library is unavailable");return;}try{var host=$("#globe"),g=window.Globe({rendererConfig:{antialias:true,alpha:true}})(host).globeImageUrl("https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg").bumpImageUrl("https://unpkg.com/three-globe/example/img/earth-topology.png").backgroundColor("rgba(0,0,0,0)").showAtmosphere(true).atmosphereColor("#7cc5f0").atmosphereAltitude(.17).pointColor(function(e){return colors[e.category]||colors.other;}).pointLat("lat").pointLng("lng").pointAltitude(.014).pointRadius(function(e){return e.category==="earthquakes"?Math.min(1.2,Math.max(.2,.2+(e.mag-2.5)*.18)):.4;}).pointResolution(9).pointLabel(function(e){return safe(e.title);}).onPointClick(function(e){detail(e);}).ringLat("lat").ringLng("lng").ringColor(function(e){return [colors[e.category]+"aa",colors[e.category]+"08"];}).ringMaxRadius(3.5).ringPropagationSpeed(.7).ringRepeatPeriod(3100);
-state.globe=g;g.controls().autoRotate=!matchMedia("(prefers-reduced-motion: reduce)").matches;g.controls().autoRotateSpeed=.33;g.controls().enableDamping=true;g.pointOfView({lat:20,lng:15,altitude:2.2},0);var resize=function(){var r=host.getBoundingClientRect();if(r.width&&r.height)g.width(r.width).height(r.height);};new ResizeObserver(resize).observe(host);resize();render();$("#globeWarning").hidden=true;}catch(e){state.globe=null;showGlobeError("WebGL initialization failed",e);}}
+function startGlobe(){
+ if(state.globe)return;
+ if(typeof window.Globe!=="function"){showGlobeError("Globe.GL library is unavailable");return;}
+ try{
+  var host=$("#globe");
+  var g=window.Globe({rendererConfig:{antialias:true,alpha:true}})(host)
+   .globeImageUrl("https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg")
+   .bumpImageUrl("https://unpkg.com/three-globe/example/img/earth-topology.png")
+   .backgroundColor("rgba(0,0,0,0)").showAtmosphere(true)
+   .atmosphereColor("#7cc5f0").atmosphereAltitude(.17)
+   .htmlLat("lat").htmlLng("lng").htmlAltitude(.023)
+   .htmlElement(eventMarker).htmlTransitionDuration(0)
+   .pathPoints("points").pathPointLat(function(p){return p[1];})
+   .pathPointLng(function(p){return p[0];})
+   .pathColor(function(){return "rgba(168,198,236,0.24)";})
+   .pathAltitude(.004).pathStroke(.16).pathTransitionDuration(0);
+  state.globe=g;
+  g.controls().autoRotateSpeed=.33;
+  g.controls().enableDamping=true;
+  resumeRotation();
+  g.pointOfView({lat:20,lng:15,altitude:2.2},0);
+  var resize=function(){var r=host.getBoundingClientRect();if(r.width&&r.height)g.width(r.width).height(r.height);};
+  new ResizeObserver(resize).observe(host);resize();
+  render();loadBorders(g);
+  $("#globeWarning").hidden=true;
+ }catch(error){state.globe=null;showGlobeError("WebGL initialization failed",error);}
+}
+
 $$("[data-days]").forEach(function(b){b.addEventListener("click",function(){var v=Number(b.dataset.days);if(state.days===v)return;state.days=v;$$("[data-days]").forEach(function(x){x.classList.toggle("active",x===b);});$("#hint").textContent=t("hints")[v];closeDetail();load();});});
 $$("[data-layer]").forEach(function(b){b.addEventListener("click",function(){setLayer(b.dataset.layer);});});
-$("#search").addEventListener("input",function(e){state.query=e.target.value.trim().toLowerCase();render();});$("#language").addEventListener("click",function(){state.lang=state.lang==="pl"?"en":"pl";try{localStorage.setItem("earth-live-lang",state.lang);}catch(e){}translate();});$("#refresh").addEventListener("click",load);
+$("#search").addEventListener("input",function(e){state.query=e.target.value.trim().toLowerCase();if(state.selected&&!filtered().some(function(row){return row.id===state.selected.id;}))closeDetail();render();});$("#language").addEventListener("click",function(){state.lang=state.lang==="pl"?"en":"pl";try{localStorage.setItem("earth-live-lang",state.lang);}catch(e){}translate();});$("#refresh").addEventListener("click",load);
 $("#plus").addEventListener("click",function(){if(state.globe){var v=state.globe.pointOfView();v.altitude=Math.max(.7,v.altitude*.75);state.globe.pointOfView(v,500);}});$("#minus").addEventListener("click",function(){if(state.globe){var v=state.globe.pointOfView();v.altitude=Math.min(5,v.altitude*1.3);state.globe.pointOfView(v,500);}});$("#reset").addEventListener("click",function(){closeDetail();if(state.globe)state.globe.pointOfView({lat:20,lng:15,altitude:2.2},900);});window.addEventListener("keydown",function(e){if(e.key==="Escape")closeDetail();});
 translate();load();loadGlobeLibrary();setInterval(function(){if(!document.hidden&&!state.loading)load();},300000);
 })();
