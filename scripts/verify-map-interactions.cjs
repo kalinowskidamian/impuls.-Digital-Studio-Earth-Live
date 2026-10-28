@@ -186,7 +186,7 @@ async function main(){
  assert.equal(panel.hidden,false,"Third tap reopens the same event");
  assert.equal(panel.parentNode,feedPanel,"Reopened detail returns beneath the selected row");
  // Selecting a different feed event keeps one card open beside the newly selected row.
- const otherRow=feedPanel.children.find(row=>row.dataset&&row.dataset.eventId!==firstRow.dataset.eventId);
+ const otherRow=feedPanel.children.find(row=>row.dataset&&row.dataset.eventId&&row.dataset.eventId!==firstRow.dataset.eventId);
  assert.ok(otherRow,"A second event exists for switching selection");
  otherRow.fire("click");
  assert.equal(panel.hidden,false,"Selecting another event keeps the card open");
