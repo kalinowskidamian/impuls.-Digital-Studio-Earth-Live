@@ -37,4 +37,10 @@ assert.ok(html.includes(".studio-period{color:#fff}"), "Studio logo period shoul
 assert.ok(html.includes('id="strap"'), "Masthead label must have an ID for i18n updates");
 assert.ok(html.includes("grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)"), "Header must keep the masthead centered between equal columns");
 assert.ok(html.includes(".strap{white-space:nowrap;justify-self:center;text-align:center}"), "Masthead needs fixed center alignment");
+const favicon = fs.readFileSync("public/favicon.svg", "utf8");
+assert.ok(html.includes('<link rel="icon" type="image/svg+xml" sizes="any" href="/favicon.svg?v=1">'), "Earth Live favicon link missing");
+assert.match(favicon, /<svg[^>]*viewBox="0 0 64 64"/, "Favicon must use a square scalable viewBox");
+assert.match(favicon, /<clipPath id="sphere">/, "Favicon Earth silhouette missing");
+assert.match(favicon, /<radialGradient id="ocean"/, "Favicon ocean gradient missing");
+assert.match(favicon, /<linearGradient id="land"/, "Favicon land gradient missing");
 console.log("QA PASS: " + inlineCount + " inline script(s) parse, primary UI exists and PL/EN switch is accessible.");
