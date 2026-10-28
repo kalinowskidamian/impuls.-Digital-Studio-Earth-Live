@@ -130,6 +130,19 @@ async function main(){
  assert.ok(buttons.every(x=>x.className==="globe-marker"),"All incidents use nested interactive button");
  assert.ok(buttons.every(x=>x.textContent!==""));
  assert.equal(new Set(buttons.map(x=>x.textContent)).size,4,"Every category has matching symbol");
+ // Native mobile scroll must propagate from cards and the feed to the page.
+ const mobileDetailRule=html.match(/@media\(max-width:670px\)\{\s*\.right \.detail\{([^}]*)\}/);
+ assert.ok(mobileDetailRule,"Mobile detail style is present");
+ assert.match(mobileDetailRule[1],/overflow:visible/,"Mobile detail must not intercept touch scrolling");
+ assert.match(mobileDetailRule[1],/max-height:none/,"Mobile detail must expand naturally with content");
+ assert.match(mobileDetailRule[1],/overscroll-behavior:auto/,"Mobile detail must allow scroll chaining");
+ const mobileFeedRule=html.match(/\.right \.feed\{([^}]*)\}/);
+ assert.ok(mobileFeedRule,"Mobile feed style exists");
+ assert.match(mobileFeedRule[1],/overflow:visible/,"Mobile feed must not trap page scrolling");
+ assert.match(mobileFeedRule[1],/flex:none/,"Feed content must determine document height");
+ const mobileLinkRule=html.match(/\.right \.detail \.source-link\{([^}]*)\}/);
+ assert.ok(mobileLinkRule);
+ assert.match(mobileLinkRule[1],/position:static/,"Source link must sit immediately below card content");
  const hoverRule=html.match(/\.globe-marker:hover[^{}]*\{([^}]*)\}/);
  assert.ok(hoverRule,"Hover styling must exist");
  assert.ok(!/\b(scale|transform)\s*:/.test(hoverRule[1]),"Hover must not modify element geometry");
@@ -164,6 +177,23 @@ async function main(){
  assert.equal(panel.hidden,false);
  assert.match(panel.innerHTML,/OTWÓRZ ŹRÓDŁO/,"Source link must be in the compact detail card");
  assert.equal(panel.scrollOptions.block,"nearest","Feed selection must scroll only as much as needed");
+ // Tapping the same feed row collapses and restores the card without changing the map.
+ firstRow.fire("click");
+ assert.equal(panel.hidden,true,"Second tap on the same feed item closes the details");
+ assert.equal(panel.parentNode,right,"Collapsed detail goes back to its original container");
+ assert.equal(controls.autoRotate,true,"Closing the repeated selection resumes globe rotation");
+ firstRow.fire("click");
+ assert.equal(panel.hidden,false,"Third tap reopens the same event");
+ assert.equal(panel.parentNode,feedPanel,"Reopened detail returns beneath the selected row");
+ // Selecting a different feed event keeps one card open beside the newly selected row.
+ const otherRow=feedPanel.children.find(row=>row.dataset&&row.dataset.eventId!==firstRow.dataset.eventId);
+ assert.ok(otherRow,"A second event exists for switching selection");
+ otherRow.fire("click");
+ assert.equal(panel.hidden,false,"Selecting another event keeps the card open");
+ assert.equal(feedPanel.children.indexOf(panel),feedPanel.children.indexOf(otherRow)+1,"Selecting another event moves card beside that event");
+ firstRow.fire("click");
+ assert.equal(panel.hidden,false,"Selecting the original event again opens it rather than collapsing another selection");
+ assert.equal(feedPanel.children.indexOf(panel),feedPanel.children.indexOf(firstRow)+1);
  // Switching languages must retain the card's source position through feed rebuild.
  languages[1].fire("click");
  const selectedRow=feedPanel.children.find(row=>row.dataset&&row.dataset.eventId===firstRow.dataset.eventId);
