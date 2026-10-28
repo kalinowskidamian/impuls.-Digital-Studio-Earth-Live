@@ -1,0 +1,22 @@
+name: Earth Live QA validation
+
+on:
+  push:
+    branches: [QA]
+  pull_request:
+    branches: [main]
+
+jobs:
+  syntax-and-structure:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Validate static application JavaScript
+        run: node scripts/validate-inline-js.cjs
+      - name: Test 3D library bootstrap and CDN failover
+        run: node scripts/verify-globe-bootstrap.cjs
+      - name: Test map markers, country outlines, categories and hover
+        run: node scripts/verify-map-interactions.cjs

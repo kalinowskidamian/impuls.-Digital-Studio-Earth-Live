@@ -1,0 +1,233 @@
+"use strict";
+const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const vm = require("node:vm");
+
+const html = fs.readFileSync("public/index.html","utf8");
+const script = html.match(/<script>([\s\S]*?)<\/script>/);
+assert.ok(script, "Earth Live inline application code missing");
+
+class FakeElement {
+ constructor(id="") {
+  this.id=id;this.hidden=false;this.style={setProperty(){}};
+  this.dataset={};this.textContent="";this.innerHTML="";this.value="";
+  this.attrs={};this.listeners={};this.children=[];this.parentNode=null;this.scrollOptions=null;
+  this.classList={values:new Set(),toggle:(k,v)=>{if(v)this.classList.values.add(k);else this.classList.values.delete(k);},add:k=>this.classList.values.add(k),remove:k=>this.classList.values.delete(k)};
+ }
+ addEventListener(type,listener){(this.listeners[type]??=[]).push(listener);}
+ fire(type,event={}){for(const fn of this.listeners[type]||[])fn({...event,target:event.target||this,stopPropagation(){}});}
+ setAttribute(key,value){this.attrs[key]=value;}
+ getBoundingClientRect(){return {left:120,top:100,width:560,height:560};}
+ querySelector(){return new FakeElement();}
+ insertBefore(el,ref){
+  if(el===ref)return; // DOM insertBefore(node,node) is a no-op.
+  if(el.parentNode){const siblings=el.parentNode.children;const at=siblings.indexOf(el);if(at>=0)siblings.splice(at,1);}
+  const i=ref==null?this.children.length:this.children.indexOf(ref);
+  if(i<0)throw new Error("Reference node is not a child");
+  this.children.splice(i,0,el);el.parentNode=this;
+ }
+ appendChild(el){this.insertBefore(el,null);}
+ insertAdjacentElement(where,el){
+  if(where!=="afterend"||!this.parentNode)throw new Error("Invalid placement");
+  const siblings=this.parentNode.children;
+  this.parentNode.insertBefore(el,siblings[siblings.indexOf(this)+1]||null);
+ }
+ replaceChildren(){this.children.forEach(el=>el.parentNode=null);this.children=[];}
+ scrollIntoView(options){this.scrollOptions=options;}
+ remove(){if(this.parentNode){const i=this.parentNode.children.indexOf(this);if(i>=0)this.parentNode.children.splice(i,1);this.parentNode=null;}}
+}
+
+async function main(){
+ const all=new Map();
+ const selectors=["all","earthquakes","wildfires","severeStorms","volcanoes","other"];
+ const layers=selectors.map(layer=>{const e=new FakeElement();e.dataset.layer=layer;return e;});
+ const days=[1,7,30].map(n=>{const e=new FakeElement();e.dataset.days=String(n);return e;});
+ const languages=["pl","en"].map(lang=>{const e=new FakeElement();e.dataset.lang=lang;return e;});
+ const saved={};let mobile=false;
+ const windowListeners={};
+ const byId=s=>{if(!all.has(s))all.set(s,new FakeElement(s));return all.get(s);};
+ const right=byId(".right"),feedPanel=byId("#feed");
+ right.appendChild(feedPanel);right.appendChild(byId("#detail"));right.appendChild(byId("#update"));
+ const scripts=[],calls={markers:[],paths:[]},controls={autoRotate:false,autoRotateSpeed:0,enableDamping:false};
+ const pendingTimers=new Map();let nextTimerId=0;
+ const g = new Proxy({}, {get(_obj,key){
+  if(key==="controls")return ()=>controls;
+  if(key==="htmlElement")return (value)=>{calls.createMarker=value;return g;};
+  if(key==="htmlElementsData")return (value)=>{calls.markers=value;return g;};
+  if(key==="pathsData")return (value)=>{calls.paths=value;return g;};
+  if(key==="pointOfView")return (...args)=>args.length?g:{lat:0,lng:0,altitude:2};
+  if(key==="width"||key==="height")return value=>{calls[key]=value;return g;};
+  const available=new Set([
+   "globeImageUrl","bumpImageUrl","backgroundColor","showAtmosphere",
+   "atmosphereColor","atmosphereAltitude","htmlLat","htmlLng","htmlAltitude",
+   "htmlTransitionDuration","pathPoints","pathPointLat","pathPointLng",
+   "pathPointAlt","pathColor","pathStroke","pathTransitionDuration"
+  ]);
+  // Deliberately refuse unknown Globe.GL methods (e.g. the invalid pathAltitude).
+  if(!available.has(key))throw new TypeError("Unknown Globe.GL API method: "+String(key));
+  return ()=>g;
+ }});
+ const now=Date.now();
+ const quake=(id,title)=>({type:"Feature",id,geometry:{coordinates:[8,48,13]},properties:{place:title,mag:3.7,time:now,url:"https://earthquake.usgs.gov/earthquakes/eventpage/"+id}});
+ const usgs={features:[quake("q1","California quake"),quake("q2","Chile quake")]};
+ const nasa={events:[
+  {id:"w1",title:"Oregon wildfire",categories:[{id:"wildfires"}],geometry:[{type:"Point",coordinates:[-120,44],date:new Date(now).toISOString()}],sources:[]},
+  {id:"s1",title:"Cyclone Ambar",categories:[{id:"severeStorms"}],geometry:[{type:"Point",coordinates:[80,12],date:new Date(now).toISOString()}],sources:[]},
+  {id:"v1",title:"Volcano summit",categories:[{id:"volcanoes"}],geometry:[{type:"Point",coordinates:[140,36],date:new Date(now).toISOString()}],sources:[]}
+ ]};
+ const world={type:"Topology",transform:{scale:[1,1],translate:[0,0]},arcs:[[[4,2],[2,3]]],objects:{countries:{geometries:[{arcs:[[0]]},{arcs:[[~0]]}]}}};
+ const doc={documentElement:{lang:"pl"},hidden:false,querySelector:byId,
+  querySelectorAll:s=>s==="[data-layer]"||s===".layer"?layers:s==="[data-days]"?days:s==="[data-lang]"?languages:[],
+  createElement:tag=>new FakeElement(tag),
+  head:{appendChild(node){scripts.push(node);}},
+ };
+ const context={document:doc,window:{addEventListener(type,fn){windowListeners[type]=fn;},Globe:undefined},
+  console,localStorage:{getItem(k){return saved[k]??null;},setItem(k,v){saved[k]=v;}},
+  ResizeObserver:class{observe(){}},
+  AbortController,
+  setTimeout(fn,delay){const id=++nextTimerId;pendingTimers.set(id,{fn,delay});return id;},
+  clearTimeout(id){pendingTimers.delete(id);},
+  setInterval(){return 1;},
+  matchMedia(query){return {matches:query==="(max-width:670px)"&&mobile};},
+  fetch:async (url)=>({ok:true,json:async()=>url.includes("earthquake.usgs.gov")?usgs:url.includes("eonet.gsfc")?nasa:world})
+ };
+ vm.runInNewContext(script[1],context,{filename:"index.html"});
+ assert.equal(scripts.length,1,"Globe library loader starts independently from feeds");
+ context.window.Globe=()=>()=>g;
+ scripts[0].fire("load");
+ // The test FakeElement fires the same listeners as DOM; external script uses .onload.
+ if(typeof scripts[0].onload==="function")scripts[0].onload();
+ await new Promise(resolve=>setTimeout(resolve,0));
+ await new Promise(resolve=>setTimeout(resolve,0));
+ assert.equal(calls.width,560,"Globe must be resized to its own stage, not the whole browser");
+ assert.equal(calls.height,560,"Globe height must match its stage");
+ assert.equal(byId("#globeWarning").hidden,true,"Successful init must clear old WebGL warning");
+ assert.equal(calls.markers.length,5,"Default all-layer globe matches both API feeds");
+ assert.equal(byId("#strap").textContent,"✳  SYSTEM OBSERWACJI PLANETY  / 001","Initial PL masthead is translated");
+ assert.equal(byId("#feedKicker").textContent,"STRUMIEŃ ZDARZEŃ","Initial feed heading must be in Polish");
+ assert.equal(languages[0].attrs["aria-pressed"],"true","PL active on initial render");
+ assert.equal(languages[1].attrs["aria-pressed"],"false","EN inactive on initial render");
+ languages[1].fire("click");
+ assert.equal(doc.documentElement.lang,"en","EN button changes application language");
+ assert.equal(byId("#strap").textContent,"✳  PLANETARY OBSERVATION SYSTEM  / 001","EN masthead translates correctly");
+ assert.equal(byId("#feedKicker").textContent,"EVENT FEED","English feed heading must be translated");
+ assert.equal(languages[1].attrs["aria-pressed"],"true","EN is visibly and accessibly selected");
+ assert.equal(languages[0].attrs["aria-pressed"],"false","PL is deselected");
+ assert.equal(saved["earth-live-lang"],"en","Language choice is persisted");
+ languages[0].fire("click");
+ assert.equal(doc.documentElement.lang,"pl","PL button switches back");
+ assert.equal(byId("#strap").textContent,"✳  SYSTEM OBSERWACJI PLANETY  / 001","Switching to PL restores Polish masthead");
+ assert.equal(byId("#feedKicker").textContent,"STRUMIEŃ ZDARZEŃ","Switching back restores Polish feed heading");
+ assert.equal(languages[0].attrs["aria-pressed"],"true","PL is selected again");
+ assert.equal(calls.markers.length,5,"Switching languages preserves globe markers");
+ assert.equal(calls.paths.length,1,"Shared TopoJSON border arc decoded only once");
+ assert.equal(calls.paths[0].points.length,2);
+ const maker=calls.createMarker;
+ assert.equal(typeof maker,"function");
+ const visual=calls.markers.map(x=>maker(x));
+ assert.ok(visual.every(x=>x.className==="globe-pin"),"CSS2DRenderer owns stable anchor");
+ const buttons=visual.map(x=>x.children[0]);
+ assert.ok(buttons.every(x=>x.className==="globe-marker"),"All incidents use nested interactive button");
+ assert.ok(buttons.every(x=>x.textContent!==""));
+ assert.equal(new Set(buttons.map(x=>x.textContent)).size,4,"Every category has matching symbol");
+ // Native mobile scroll must propagate from cards and the feed to the page.
+ const mobileDetailRule=html.match(/@media\(max-width:670px\)\{\s*\.right \.detail\{([^}]*)\}/);
+ assert.ok(mobileDetailRule,"Mobile detail style is present");
+ assert.match(mobileDetailRule[1],/overflow:visible/,"Mobile detail must not intercept touch scrolling");
+ assert.match(mobileDetailRule[1],/max-height:none/,"Mobile detail must expand naturally with content");
+ assert.match(mobileDetailRule[1],/overscroll-behavior:auto/,"Mobile detail must allow scroll chaining");
+ const mobileFeedRule=html.match(/\.right \.feed\{([^}]*)\}/);
+ assert.ok(mobileFeedRule,"Mobile feed style exists");
+ assert.match(mobileFeedRule[1],/overflow:visible/,"Mobile feed must not trap page scrolling");
+ assert.match(mobileFeedRule[1],/flex:none/,"Feed content must determine document height");
+ const mobileLinkRule=html.match(/\.right \.detail \.source-link\{([^}]*)\}/);
+ assert.ok(mobileLinkRule);
+ assert.match(mobileLinkRule[1],/position:static/,"Source link must sit immediately below card content");
+ const hoverRule=html.match(/\.globe-marker:hover[^{}]*\{([^}]*)\}/);
+ assert.ok(hoverRule,"Hover styling must exist");
+ assert.ok(!/\b(scale|transform)\s*:/.test(hoverRule[1]),"Hover must not modify element geometry");
+ const earthquake=calls.markers.find(x=>x.category==="earthquakes");
+ const quakeButton=maker(earthquake).children[0];
+ assert.equal(quakeButton.textContent,"◈");
+ quakeButton.fire("pointerenter",{pointerType:"mouse",clientX:350,clientY:330});
+ assert.equal(controls.autoRotate,false,"Hover must pause globe");
+ assert.equal(controls.enableDamping,false,"Hover must disable residual camera inertia");
+ assert.equal(byId("#globeTip").hidden,false,"Hover must show detail card");
+ assert.match(byId("#globeTip").innerHTML,/California quake|Chile quake/);
+ quakeButton.fire("pointerleave",{pointerType:"mouse"});
+ assert.equal(controls.autoRotate,false,"Rotation must remain paused during short pointer gaps");
+ assert.equal(byId("#globeTip").hidden,false,"Card must not flicker on transient pointer exit");
+ quakeButton.fire("pointerenter",{pointerType:"mouse",clientX:350,clientY:330});
+ assert.equal(pendingTimers.size,0,"Re-enter cancels the pending rotation restart");
+ quakeButton.fire("pointerleave",{pointerType:"mouse"});
+ const release=[...pendingTimers.entries()].find(([_id,t])=>t.delay===220);
+ assert.ok(release,"Short hover release timer must exist");
+ pendingTimers.delete(release[0]);release[1].fn();
+ assert.equal(controls.autoRotate,true,"Rotation resumes when pointer truly leaves");
+ assert.equal(controls.enableDamping,true,"Damping resumes after hover");
+ assert.equal(byId("#globeTip").hidden,true);
+ // Mobile: opening a feed event inserts a compact card directly after the tapped row.
+ mobile=true;
+ const firstRow=feedPanel.children.find(row=>row.dataset&&row.dataset.eventId);
+ assert.ok(firstRow,"Feed must contain event rows");
+ firstRow.fire("click");
+ const panel=byId("#detail");
+ assert.equal(panel.parentNode,feedPanel,"Feed-triggered mobile card must be inside the feed");
+ assert.equal(feedPanel.children.indexOf(panel),feedPanel.children.indexOf(firstRow)+1,"Details must appear immediately after the chosen event");
+ assert.equal(panel.hidden,false);
+ assert.match(panel.innerHTML,/OTWÓRZ ŹRÓDŁO/,"Source link must be in the compact detail card");
+ assert.equal(panel.scrollOptions.block,"nearest","Feed selection must scroll only as much as needed");
+ // Tapping the same feed row collapses and restores the card without changing the map.
+ firstRow.fire("click");
+ assert.equal(panel.hidden,true,"Second tap on the same feed item closes the details");
+ assert.equal(panel.parentNode,right,"Collapsed detail goes back to its original container");
+ assert.equal(controls.autoRotate,true,"Closing the repeated selection resumes globe rotation");
+ firstRow.fire("click");
+ assert.equal(panel.hidden,false,"Third tap reopens the same event");
+ assert.equal(panel.parentNode,feedPanel,"Reopened detail returns beneath the selected row");
+ // Selecting a different feed event keeps one card open beside the newly selected row.
+ const otherRow=feedPanel.children.find(row=>row.dataset&&row.dataset.eventId&&row.dataset.eventId!==firstRow.dataset.eventId);
+ assert.ok(otherRow,"A second event exists for switching selection");
+ otherRow.fire("click");
+ assert.equal(panel.hidden,false,"Selecting another event keeps the card open");
+ assert.equal(feedPanel.children.indexOf(panel),feedPanel.children.indexOf(otherRow)+1,"Selecting another event moves card beside that event");
+ firstRow.fire("click");
+ assert.equal(panel.hidden,false,"Selecting the original event again opens it rather than collapsing another selection");
+ assert.equal(feedPanel.children.indexOf(panel),feedPanel.children.indexOf(firstRow)+1);
+ // Switching languages must retain the card's source position through feed rebuild.
+ languages[1].fire("click");
+ const selectedRow=feedPanel.children.find(row=>row.dataset&&row.dataset.eventId===firstRow.dataset.eventId);
+ assert.ok(selectedRow);
+ assert.equal(feedPanel.children.indexOf(panel),feedPanel.children.indexOf(selectedRow)+1,"Inline placement must survive language switch");
+ languages[0].fire("click");
+ // Mobile: tapping a marker moves the same card to the start of the feed, not full screen.
+ quakeButton.fire("click",{pointerType:"touch"});
+ assert.equal(panel.parentNode,right,"Globe-triggered card must live above the feed");
+ assert.equal(right.children.indexOf(panel),right.children.indexOf(feedPanel)-1,"Globe details must appear before event list");
+ assert.equal(panel.scrollOptions.block,"start","Globe details must be scrolled into view at feed start");
+ // Close restores the original DOM so the desktop overlay continues to work.
+ byId("#detailClose").fire("click");
+ assert.equal(panel.hidden,true);
+ assert.equal(panel.parentNode,right,"Closing card restores panel to original container");
+ assert.equal(right.children.indexOf(panel),right.children.indexOf(byId("#update"))-1);
+ // Resizing with details open moves the card safely between desktop and mobile.
+ firstRow.fire("click");
+ mobile=false;windowListeners.resize();
+ assert.equal(panel.parentNode,right,"Desktop view restores overlay into right column");
+ mobile=true;windowListeners.resize();
+ assert.equal(panel.parentNode,feedPanel,"Returning to mobile puts the card beside its event");
+ byId("#detailClose").fire("click");
+ assert.equal(panel.hidden,true);
+ for(const name of selectors.slice(1)){
+  const layer=layers.find(x=>x.dataset.layer===name);
+  layer.fire("click");
+  assert.ok(calls.markers.every(x=>x.category===name),"Only selected category appears on globe");
+ }
+ layers.find(x=>x.dataset.layer==="all").fire("click");
+ byId("#search").fire("input",{target:{value:"Cyclone"}});
+ assert.equal(calls.markers.length,1);
+ assert.equal(calls.markers[0].title,"Cyclone Ambar","Search must also filter the globe");
+ assert.match(byId("#markerStatus").textContent,/1 \/ 1/);
+ console.log("QA PASS: country borders, marker parity, hover pause, matching filters and search");
+}
+main().catch(e=>{console.error(e);process.exitCode=1;});
