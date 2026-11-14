@@ -1,0 +1,63 @@
+name: Modern Web Guidance (QA audit)
+
+on:
+  push:
+    branches: ['QA']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  legacy-scan:
+    name: Install guidance CLI and audit QA source
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out QA
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Modern Web Guidance
+        run: npm install --global --no-audit --no-fund modern-web-guidance@latest
+      - name: Scan legacy patterns
+        shell: bash
+        run: |
+          mkdir -p modern-web-audit
+          set +e
+          modern-web-guidance legacy-scan . 2>&1 | tee modern-web-audit/legacy-scan.txt
+          result=${PIPESTATUS[0]}
+          set -e
+          printf '%s\n' "$result" > modern-web-audit/exit-code.txt
+          printf 'repository=%s\nbranch=%s\nsha=%s\n' "$GITHUB_REPOSITORY" "$GITHUB_REF_NAME" "$GITHUB_SHA" > modern-web-audit/source.txt
+          echo "Legacy scan finished with exit status $result."
+      - name: Save full scan output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: modern-web-guidance-${{ github.ref_name }}-${{ github.sha }}
+          path: modern-web-audit/
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Add job summary and signal scanner failures
+        if: always()
+        shell: bash
+        run: |
+          echo "## Modern Web Guidance — QA" >> "$GITHUB_STEP_SUMMARY"
+          if [ -f modern-web-audit/legacy-scan.txt ]; then
+            echo "Source: `$GITHUB_REPOSITORY@$GITHUB_REF_NAME` (`$GITHUB_SHA`)" >> "$GITHUB_STEP_SUMMARY"
+            echo 'Full output is saved in the workflow artifact.' >> "$GITHUB_STEP_SUMMARY"
+            echo 'Results are suggestions for review, not automatically applied code changes.' >> "$GITHUB_STEP_SUMMARY"
+            echo '~~~text' >> "$GITHUB_STEP_SUMMARY"
+            sed -n '1,180p' modern-web-audit/legacy-scan.txt >> "$GITHUB_STEP_SUMMARY"
+            echo '~~~' >> "$GITHUB_STEP_SUMMARY"
+            if [ "$(cat modern-web-audit/exit-code.txt)" -ne 0 ]; then
+              echo "Scanner exited with a nonzero code; inspect logs to distinguish findings from errors." >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+            fi
+          else
+            echo 'Scanner did not produce a report. Check installation and job logs.' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
