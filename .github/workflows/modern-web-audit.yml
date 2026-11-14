@@ -1,0 +1,40 @@
+name: Modern Web Guidance - QA audit
+
+on:
+  push:
+    branches: [qa]
+    paths:
+      - '.github/workflows/modern-web-audit.yml'
+      - '**/*.html'
+      - '**/*.css'
+      - '**/*.js'
+      - '**/*.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Scan legacy web patterns
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Modern Web Guidance version
+        run: npx -y modern-web-guidance@latest --help
+      - name: Audit entire repository
+        shell: bash
+        run: |
+          set -o pipefail
+          npx -y modern-web-guidance@latest legacy-scan . 2>&1 | tee modern-web-audit.txt
+      - name: Upload audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: modern-web-guidance-audit
+          path: modern-web-audit.txt
+          if-no-files-found: warn
