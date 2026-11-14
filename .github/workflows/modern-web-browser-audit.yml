@@ -1,0 +1,68 @@
+name: Browser audit (QA, Lighthouse)
+
+on:
+  push:
+    branches: ['QA']
+    paths:
+      - '.github/workflows/modern-web-browser-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Lighthouse
+        run: npm install --global --no-audit --no-fund lighthouse@latest
+      - name: Inspect representative local QA pages in Chromium
+        shell: bash
+        run: |
+          mkdir -p browser-audit
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory 'public' >/tmp/qa-http-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          sleep 2
+          while IFS='|' read -r slug route; do
+            if [ -z "$slug" ]; then continue; fi
+            echo "::group::Lighthouse $slug ($route)"
+            set +e
+            lighthouse "http://127.0.0.1:8765$route" \
+              --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage" \
+              --only-categories=performance,accessibility,best-practices,seo \
+              --max-wait-for-load=30000 \
+              --output=json --output-path="$PWD/browser-audit/$slug.json" --quiet \
+              >"browser-audit/$slug-run.log" 2>&1
+            rc=$?
+            set -e
+            printf '%s: exit %s\n' "$slug" "$rc" | tee -a browser-audit/run-status.txt
+            if [ "$rc" -ne 0 ]; then tail -35 "browser-audit/$slug-run.log"; fi
+            echo "::endgroup::"
+          done <<'PAGES'
+earth-live|/
+PAGES
+          node - <<'NODE'
+          const fs=require('fs');
+          for(const name of fs.readdirSync('browser-audit').filter(x=>x.endsWith('.json'))){
+            try{
+              const r=JSON.parse(fs.readFileSync('browser-audit/'+name,'utf8'));
+              const categories=Object.fromEntries(Object.entries(r.categories||{}).map(([id,x])=>[id,Math.round((x.score||0)*100)]));
+              const findings=(r.categories?.accessibility?.auditRefs||[]).map(x=>({id:x.id,audit:r.audits[x.id]})).filter(x=>x.audit?.score!==null && x.audit?.score<1).slice(0,30).map(x=>({id:x.id,title:x.audit.title,details:x.audit.details?.items?.length}));
+              console.log(JSON.stringify({page:name,url:r.finalDisplayedUrl,categories,accessibilityFindings:findings}));
+            }catch(e){console.log(name,'report error:',e.message)}
+          }
+NODE
+      - name: Upload browser audits
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-browser-audit-${{ github.ref_name }}-${{ github.sha }}
+          path: browser-audit/
+          retention-days: 30
+          if-no-files-found: warn
