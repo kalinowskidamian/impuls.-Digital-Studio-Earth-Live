@@ -21,6 +21,7 @@ function createHarness() {
         innerHTML: "",
         value: "",
         classList: { toggle() {} },
+        setAttribute() {},
         addEventListener() {},
         getBoundingClientRect() { return { width: 730, height: 700 }; }
       });
@@ -29,6 +30,7 @@ function createHarness() {
   }
 
   const document = {
+    addEventListener() {},
     documentElement: { lang: "pl" },
     querySelector: element,
     querySelectorAll() { return []; },

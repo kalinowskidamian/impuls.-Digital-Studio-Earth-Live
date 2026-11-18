@@ -5,6 +5,7 @@ on:
     branches: ['QA']
     paths:
       - '.github/workflows/modern-web-browser-audit.yml'
+      - 'public/**'
   workflow_dispatch:
 
 permissions:

@@ -43,7 +43,7 @@ async function main(){
  const layers=selectors.map(layer=>{const e=new FakeElement();e.dataset.layer=layer;return e;});
  const days=[1,7,30].map(n=>{const e=new FakeElement();e.dataset.days=String(n);return e;});
  const languages=["pl","en"].map(lang=>{const e=new FakeElement();e.dataset.lang=lang;return e;});
- const saved={};let mobile=false;
+ const saved={};let mobile=false,reducedMotion=false,visibilityCallback,intersectionCallback,motionCallback;
  const windowListeners={};
  const byId=s=>{if(!all.has(s))all.set(s,new FakeElement(s));return all.get(s);};
  const right=byId(".right"),feedPanel=byId("#feed");
@@ -55,7 +55,9 @@ async function main(){
   if(key==="htmlElement")return (value)=>{calls.createMarker=value;return g;};
   if(key==="htmlElementsData")return (value)=>{calls.markers=value;return g;};
   if(key==="pathsData")return (value)=>{calls.paths=value;return g;};
-  if(key==="pointOfView")return (...args)=>args.length?g:{lat:0,lng:0,altitude:2};
+  if(key==="pauseAnimation")return ()=>{calls.pauses=(calls.pauses||0)+1;return g;};
+  if(key==="resumeAnimation")return ()=>{calls.resumes=(calls.resumes||0)+1;return g;};
+  if(key==="pointOfView")return (...args)=>{if(args.length){calls.cameraDuration=args[1];return g;}return {lat:0,lng:0,altitude:2};};
   if(key==="width"||key==="height")return value=>{calls[key]=value;return g;};
   const available=new Set([
    "globeImageUrl","bumpImageUrl","backgroundColor","showAtmosphere",
@@ -77,6 +79,7 @@ async function main(){
  ]};
  const world={type:"Topology",transform:{scale:[1,1],translate:[0,0]},arcs:[[[4,2],[2,3]]],objects:{countries:{geometries:[{arcs:[[0]]},{arcs:[[~0]]}]}}};
  const doc={documentElement:{lang:"pl"},hidden:false,querySelector:byId,
+  addEventListener(type,fn){if(type==="visibilitychange")visibilityCallback=fn;},
   querySelectorAll:s=>s==="[data-layer]"||s===".layer"?layers:s==="[data-days]"?days:s==="[data-lang]"?languages:[],
   createElement:tag=>new FakeElement(tag),
   head:{appendChild(node){scripts.push(node);}},
@@ -84,11 +87,12 @@ async function main(){
  const context={document:doc,window:{addEventListener(type,fn){windowListeners[type]=fn;},Globe:undefined},
   console,localStorage:{getItem(k){return saved[k]??null;},setItem(k,v){saved[k]=v;}},
   ResizeObserver:class{observe(){}},
+  IntersectionObserver:class{constructor(fn){intersectionCallback=fn;}observe(){}},
   AbortController,
   setTimeout(fn,delay){const id=++nextTimerId;pendingTimers.set(id,{fn,delay});return id;},
   clearTimeout(id){pendingTimers.delete(id);},
   setInterval(){return 1;},
-  matchMedia(query){return {matches:query==="(max-width:670px)"&&mobile};},
+  matchMedia(query){return {get matches(){return query==="(max-width:670px)"?mobile:reducedMotion;},addEventListener(type,fn){if(query.includes("reduced-motion"))motionCallback=fn;}};},
   fetch:async (url)=>({ok:true,json:async()=>url.includes("earthquake.usgs.gov")?usgs:url.includes("eonet.gsfc")?nasa:world})
  };
  vm.runInNewContext(script[1],context,{filename:"index.html"});
@@ -107,8 +111,33 @@ async function main(){
  assert.equal(byId("#feedKicker").textContent,"STRUMIEŃ ZDARZEŃ","Initial feed heading must be in Polish");
  assert.equal(languages[0].attrs["aria-pressed"],"true","PL active on initial render");
  assert.equal(languages[1].attrs["aria-pressed"],"false","EN inactive on initial render");
+ assert.equal(byId("#plus").attrs["aria-label"],"Powiększ");
+ assert.equal(byId("#searchLabel").textContent,"Szukaj zdarzenia");
+ assert.match(html,/data-days="1" aria-pressed="true"/);
+ assert.match(html,/data-layer="all" aria-pressed="true"/);
+ assert.match(html,/href="#feedTitle"/);
+ assert.match(html,/id="feedTitle" tabindex="-1"/);
+ assert.equal(controls.autoRotate,true);
+ intersectionCallback([{isIntersecting:false}]);
+ assert.equal(calls.pauses,1,"Offscreen globe suspends its rendering loop");
+ assert.equal(controls.autoRotate,false);
+ doc.hidden=true;visibilityCallback();
+ intersectionCallback([{isIntersecting:true}]);
+ assert.equal(calls.resumes,undefined,"A hidden tab must not resume even when stage intersects");
+ doc.hidden=false;visibilityCallback();
+ assert.equal(calls.resumes,1);
+ assert.equal(controls.autoRotate,true);
+ reducedMotion=true;motionCallback();
+ assert.equal(controls.autoRotate,false);
+ byId("#plus").fire("click");
+ assert.equal(calls.cameraDuration,0,"Reduced motion disables camera transitions");
+ reducedMotion=false;motionCallback();
+ assert.equal(controls.autoRotate,true);
  languages[1].fire("click");
  assert.equal(doc.documentElement.lang,"en","EN button changes application language");
+ assert.equal(byId("#plus").attrs["aria-label"],"Zoom in");
+ assert.equal(byId("#searchLabel").textContent,"Search events");
+ assert.equal(byId("#skipFeed").textContent,"Skip to event feed");
  assert.equal(byId("#strap").textContent,"✳  PLANETARY OBSERVATION SYSTEM  / 001","EN masthead translates correctly");
  assert.equal(byId("#feedKicker").textContent,"EVENT FEED","English feed heading must be translated");
  assert.equal(languages[1].attrs["aria-pressed"],"true","EN is visibly and accessibly selected");
@@ -153,6 +182,9 @@ async function main(){
  assert.equal(controls.autoRotate,false,"Hover must pause globe");
  assert.equal(controls.enableDamping,false,"Hover must disable residual camera inertia");
  assert.equal(byId("#globeTip").hidden,false,"Hover must show detail card");
+ doc.hidden=true;visibilityCallback();
+ doc.hidden=false;visibilityCallback();
+ assert.equal(controls.autoRotate,false,"Visibility restoration must respect active hover");
  assert.match(byId("#globeTip").innerHTML,/California quake|Chile quake/);
  quakeButton.fire("pointerleave",{pointerType:"mouse"});
  assert.equal(controls.autoRotate,false,"Rotation must remain paused during short pointer gaps");
@@ -221,6 +253,7 @@ async function main(){
  for(const name of selectors.slice(1)){
   const layer=layers.find(x=>x.dataset.layer===name);
   layer.fire("click");
+  assert.ok(layers.every(x=>x.attrs["aria-pressed"]===String(x===layer)),"Layer buttons expose exactly one active filter");
   assert.ok(calls.markers.every(x=>x.category===name),"Only selected category appears on globe");
  }
  layers.find(x=>x.dataset.layer==="all").fire("click");
@@ -228,6 +261,9 @@ async function main(){
  assert.equal(calls.markers.length,1);
  assert.equal(calls.markers[0].title,"Cyclone Ambar","Search must also filter the globe");
  assert.match(byId("#markerStatus").textContent,/1 \/ 1/);
+ days[1].fire("click");
+ assert.ok(days.every(x=>x.attrs["aria-pressed"]===String(x===days[1])),"Time filter exposes exactly one pressed button");
+ await new Promise(resolve=>setTimeout(resolve,0));
  console.log("QA PASS: country borders, marker parity, hover pause, matching filters and search");
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});

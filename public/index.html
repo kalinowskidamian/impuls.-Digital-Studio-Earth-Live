@@ -65,17 +65,23 @@
  .right .feed{display:block;min-height:0;flex:none;overflow:visible;overscroll-behavior:auto;touch-action:auto}
  .feed>.detail{margin:11px 0 20px}
 }
-@media(prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto!important}}
+.skip-link{position:fixed;z-index:20;top:12px;left:12px;padding:12px 16px;background:#171d31;color:var(--text);border:2px solid var(--mint);border-radius:6px;transform:translateY(-200%)}
+.skip-link:focus{transform:none}
+.visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+.studio-mark,.source a,.foot a{display:inline-flex;align-items:center;min-height:24px}
+@media(pointer:coarse){.control button{min-width:44px;min-height:44px}.refresh,.language-option,.window button,.layer,.detail-head button{min-height:44px}.refresh{min-width:44px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto!important}.globe-marker,.language-option,.studio-mark{transition:none}}
 </style>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://unpkg.com" crossorigin>
 </head>
 <body>
+<a class="skip-link" id="skipFeed" href="#feedTitle">Przejdź do listy zdarzeń</a>
 <div class="shell">
 <header class="top">
 <div class="brand-lockup">
-<a class="logo" href="./" aria-label="Earth Live — strona główna"><em>◎</em> EARTH<small>LIVE</small><i>.</i></a>
-<div class="brand-credit"><span class="brand-credit-label">DESIGNED BY</span><a class="studio-mark" href="https://impulsdigitalstudio.com" target="_blank" rel="noopener noreferrer" aria-label="Designed by impuls. Digital Studio — strona studia"><span class="studio-dot" aria-hidden="true"></span><span class="studio-name">impuls<span class="studio-period">.</span></span><span class="studio-sup">Digital Studio</span></a></div>
+<a class="logo" id="homeLink" href="./" aria-label="Earth Live — strona główna"><em aria-hidden="true">◎</em> EARTH<small>LIVE</small><i aria-hidden="true">.</i></a>
+<div class="brand-credit"><span class="brand-credit-label">DESIGNED BY</span><a class="studio-mark" id="studioLink" href="https://impulsdigitalstudio.com" target="_blank" rel="noopener noreferrer" aria-label="impuls. Digital Studio — strona studia"><span class="studio-dot" aria-hidden="true"></span><span class="studio-name">impuls<span class="studio-period">.</span></span><span class="studio-sup">Digital Studio</span></a></div>
 </div>
 <div class="strap" id="strap">✳ &nbsp; SYSTEM OBSERWACJI PLANETY &nbsp;/ 001</div>
 <div class="actions"><span class="live" id="live">DANE NA ŻYWO</span><div class="language-switch" role="group" aria-label="Język / Language"><button class="language-option active" type="button" data-lang="pl" aria-pressed="true" lang="pl">PL</button><button class="language-option" type="button" data-lang="en" aria-pressed="false" lang="en">EN</button></div></div>
@@ -86,27 +92,28 @@
 <h1 id="hero">Ziemia.<br><em>Na żywo.</em></h1>
 <p class="intro" id="intro">Jedna planeta. Tysiące sygnałów. Odkrywaj naturalne zjawiska, które kształtują nasz świat.</p>
 <div class="section-title"><b id="timeLabel">PRZEDZIAŁ CZASU</b><span>01 / 03</span></div>
-<div class="window" id="windows"><button class="active" data-days="1">24H</button><button data-days="7">7D</button><button data-days="30">30D</button></div>
+<div class="window" id="windows" role="group" aria-labelledby="timeLabel"><button class="active" type="button" data-days="1" aria-pressed="true">24H</button><button type="button" data-days="7" aria-pressed="false">7D</button><button type="button" data-days="30" aria-pressed="false">30D</button></div>
 <p class="hint" id="hint">Wydarzenia z ostatnich 24 godzin.</p>
 <div class="section-title"><b id="layerLabel">WARSTWY DANYCH</b><span>02 / 03</span></div>
-<div class="layers" id="layers">
-<button class="layer active" data-layer="all"><strong style="color:#aaa3ff">✳</strong><span id="l-all">Wszystkie zjawiska</span><span class="count" data-count="all">—</span></button>
-<button class="layer" data-layer="earthquakes"><strong style="color:#aaa3ff">◈</strong><span id="l-earthquakes">Trzęsienia ziemi</span><span class="count" data-count="earthquakes">—</span></button>
-<button class="layer" data-layer="wildfires"><strong style="color:#ff9d79">△</strong><span id="l-wildfires">Pożary</span><span class="count" data-count="wildfires">—</span></button>
-<button class="layer" data-layer="severeStorms"><strong style="color:#72d0eb">◎</strong><span id="l-severeStorms">Burze i cyklony</span><span class="count" data-count="severeStorms">—</span></button>
-<button class="layer" data-layer="volcanoes"><strong style="color:#eec18b">◇</strong><span id="l-volcanoes">Wulkany</span><span class="count" data-count="volcanoes">—</span></button>
-<button class="layer" data-layer="other"><strong style="color:#91e2c8">⁕</strong><span id="l-other">Pozostałe zjawiska</span><span class="count" data-count="other">—</span></button>
+<div class="layers" id="layers" role="group" aria-labelledby="layerLabel">
+<button class="layer active" type="button" data-layer="all" aria-pressed="true"><strong aria-hidden="true" style="color:#aaa3ff">✳</strong><span id="l-all">Wszystkie zjawiska</span><span class="count" data-count="all">—</span></button>
+<button class="layer" type="button" data-layer="earthquakes" aria-pressed="false"><strong aria-hidden="true" style="color:#aaa3ff">◈</strong><span id="l-earthquakes">Trzęsienia ziemi</span><span class="count" data-count="earthquakes">—</span></button>
+<button class="layer" type="button" data-layer="wildfires" aria-pressed="false"><strong aria-hidden="true" style="color:#ff9d79">△</strong><span id="l-wildfires">Pożary</span><span class="count" data-count="wildfires">—</span></button>
+<button class="layer" type="button" data-layer="severeStorms" aria-pressed="false"><strong aria-hidden="true" style="color:#72d0eb">◎</strong><span id="l-severeStorms">Burze i cyklony</span><span class="count" data-count="severeStorms">—</span></button>
+<button class="layer" type="button" data-layer="volcanoes" aria-pressed="false"><strong aria-hidden="true" style="color:#eec18b">◇</strong><span id="l-volcanoes">Wulkany</span><span class="count" data-count="volcanoes">—</span></button>
+<button class="layer" type="button" data-layer="other" aria-pressed="false"><strong aria-hidden="true" style="color:#91e2c8">⁕</strong><span id="l-other">Pozostałe zjawiska</span><span class="count" data-count="other">—</span></button>
 </div>
 <div class="stats"><div><b id="total">—</b><span class="label" id="eventsLabel">ZDARZEŃ</span></div><div><b id="quakes">—</b><span class="label" id="quakesLabel">WSTRZĄSÓW M2.5+</span></div></div>
 <div class="source">DATA: <a href="https://eonet.gsfc.nasa.gov/" target="_blank" rel="noopener noreferrer">NASA EONET</a> × <a href="https://earthquake.usgs.gov/" target="_blank" rel="noopener noreferrer">USGS</a></div>
 </aside>
 <section class="stage"><div class="stage-top"><span id="stageLabel">◎ GLOBALNY MONITOR ZDARZEŃ</span><span id="markerStatus">3D / 360°</span></div>
 <div id="globe"></div><div class="globe-tip" id="globeTip" hidden></div><p class="globe-warning" id="globeWarning" hidden>3D unavailable. The event feed remains active.</p>
-<div class="control"><button id="plus" aria-label="Zoom in">+</button><button id="minus" aria-label="Zoom out">−</button><button id="reset" aria-label="Reset view">⟲</button></div>
+<div class="control"><button id="plus" type="button" aria-label="Powiększ">+</button><button id="minus" type="button" aria-label="Pomniejsz">−</button><button id="reset" type="button" aria-label="Przywróć widok">⟲</button></div>
 <div class="stage-bottom" id="drag">PRZECIĄGNIJ, ABY OBRÓCIĆ · SCROLL, ABY PRZYBLIŻYĆ</div></section>
-<aside class="right"><div class="feed-head"><div><span class="kicker" id="feedKicker">STRUMIEŃ ZDARZEŃ</span><h2 id="feedTitle">Na radarze<i>.</i></h2></div><button class="refresh" id="refresh" aria-label="Refresh">↻</button></div>
+<aside class="right"><div class="feed-head"><div><span class="kicker" id="feedKicker">STRUMIEŃ ZDARZEŃ</span><h2 id="feedTitle" tabindex="-1">Na radarze<i>.</i></h2></div><button class="refresh" id="refresh" type="button" aria-label="Odśwież zdarzenia">↻</button></div>
 <p class="feed-sub" id="feedSubtitle">Najświeższe zjawiska z całego świata.</p>
-<input class="search" type="search" id="search" placeholder="Szukaj zdarzenia..." aria-label="Search events">
+<label class="visually-hidden" id="searchLabel" for="search">Szukaj zdarzenia</label>
+<input class="search" type="search" id="search" placeholder="Szukaj zdarzenia...">
 <div class="feed-label"><span id="results">—</span><span id="newest">NAJNOWSZE ↓</span></div>
 <div class="feed" id="feed"><div class="empty">Łączenie ze źródłami danych...</div></div>
 <div class="detail" id="detail" hidden></div>
@@ -122,12 +129,15 @@ var $$=function(s){return Array.from(document.querySelectorAll(s));};
 var colors={earthquakes:"#aaa3ff",wildfires:"#ff9d79",severeStorms:"#72d0eb",volcanoes:"#eec18b",other:"#91e2c8"};
 var glyph={earthquakes:"◈",wildfires:"△",severeStorms:"◎",volcanoes:"◇",other:"⁕"};
 var dictionaries={
-pl:{strap:"✳  SYSTEM OBSERWACJI PLANETY  / 001",eyebrow:"ŻYJĄCA PLANETA",hero:"Ziemia.<br><em>Na żywo.</em>",intro:"Jedna planeta. Tysiące sygnałów. Odkrywaj naturalne zjawiska, które kształtują nasz świat.",time:"PRZEDZIAŁ CZASU",hints:{1:"Wydarzenia z ostatnich 24 godzin.",7:"Wydarzenia z ostatnich 7 dni.",30:"Wydarzenia z ostatnich 30 dni."},layer:"WARSTWY DANYCH",labels:{all:"Wszystkie zjawiska",earthquakes:"Trzęsienia ziemi",wildfires:"Pożary",severeStorms:"Burze i cyklony",volcanoes:"Wulkany",other:"Pozostałe zjawiska"},events:"ZDARZEŃ",quakes:"WSTRZĄSÓW M2.5+",stage:"◎ GLOBALNY MONITOR ZDARZEŃ",drag:"PRZECIĄGNIJ, ABY OBRÓCIĆ · SCROLL, ABY PRZYBLIŻYĆ",feedKicker:"STRUMIEŃ ZDARZEŃ",feedTitle:"Na radarze",feedSubtitle:"Najświeższe zjawiska z całego świata.",search:"Szukaj zdarzenia...",newest:"NAJNOWSZE ↓",live:"DANE NA ŻYWO",empty:"Brak zdarzeń dla wybranego filtra.",error:"Źródła danych niedostępne. Spróbuj odświeżyć.",partial:"DANE CZĘŚCIOWE",updated:"AKTUALIZACJA",results:"ZDARZEŃ",ago:"godz. temu",mins:"min temu",source:"ŹRÓDŁO",date:"DATA OBSERWACJI",coordinates:"WSPÓŁRZĘDNE",magnitude:"MAGNITUDA",depth:"GŁĘBOKOŚĆ",close:"ZAMKNIJ",link:"OTWÓRZ ŹRÓDŁO ↗",disclaimer:"DANE MOGĄ BYĆ OPÓŹNIONE · NIE SŁUŻĄ DO OSTRZEŻEŃ"},
-en:{strap:"✳  PLANETARY OBSERVATION SYSTEM  / 001",eyebrow:"THE LIVING PLANET",hero:"Earth.<br><em>In motion.</em>",intro:"One planet. Thousands of signals. Explore the natural events shaping our world.",time:"TIME WINDOW",hints:{1:"Events from the past 24 hours.",7:"Events from the past 7 days.",30:"Events from the past 30 days."},layer:"DATA LAYERS",labels:{all:"All phenomena",earthquakes:"Earthquakes",wildfires:"Wildfires",severeStorms:"Storms & cyclones",volcanoes:"Volcanoes",other:"Other events"},events:"EVENTS",quakes:"QUAKES M2.5+",stage:"◎ GLOBAL EVENT MONITOR",drag:"DRAG TO ROTATE · SCROLL TO ZOOM",feedKicker:"EVENT FEED",feedTitle:"On the radar",feedSubtitle:"Latest natural phenomena from around the world.",search:"Search an event...",newest:"NEWEST FIRST ↓",live:"LIVE DATA",empty:"No events match this filter.",error:"Data sources unavailable. Please refresh.",partial:"PARTIAL DATA",updated:"UPDATED",results:"RESULTS",ago:"hours ago",mins:"min ago",source:"SOURCE",date:"OBSERVED",coordinates:"COORDINATES",magnitude:"MAGNITUDE",depth:"DEPTH",close:"CLOSE",link:"VIEW ORIGINAL SOURCE ↗",disclaimer:"DATA MAY BE DELAYED · NOT FOR EMERGENCY WARNINGS"}
+pl:{skip:"Przejdź do listy zdarzeń",home:"Earth Live — strona główna",studio:"impuls. Digital Studio — strona studia",zoomIn:"Powiększ",zoomOut:"Pomniejsz",resetView:"Przywróć widok",refresh:"Odśwież zdarzenia",searchLabel:"Szukaj zdarzenia",strap:"✳  SYSTEM OBSERWACJI PLANETY  / 001",eyebrow:"ŻYJĄCA PLANETA",hero:"Ziemia.<br><em>Na żywo.</em>",intro:"Jedna planeta. Tysiące sygnałów. Odkrywaj naturalne zjawiska, które kształtują nasz świat.",time:"PRZEDZIAŁ CZASU",hints:{1:"Wydarzenia z ostatnich 24 godzin.",7:"Wydarzenia z ostatnich 7 dni.",30:"Wydarzenia z ostatnich 30 dni."},layer:"WARSTWY DANYCH",labels:{all:"Wszystkie zjawiska",earthquakes:"Trzęsienia ziemi",wildfires:"Pożary",severeStorms:"Burze i cyklony",volcanoes:"Wulkany",other:"Pozostałe zjawiska"},events:"ZDARZEŃ",quakes:"WSTRZĄSÓW M2.5+",stage:"◎ GLOBALNY MONITOR ZDARZEŃ",drag:"PRZECIĄGNIJ, ABY OBRÓCIĆ · SCROLL, ABY PRZYBLIŻYĆ",feedKicker:"STRUMIEŃ ZDARZEŃ",feedTitle:"Na radarze",feedSubtitle:"Najświeższe zjawiska z całego świata.",search:"Szukaj zdarzenia...",newest:"NAJNOWSZE ↓",live:"DANE NA ŻYWO",empty:"Brak zdarzeń dla wybranego filtra.",error:"Źródła danych niedostępne. Spróbuj odświeżyć.",partial:"DANE CZĘŚCIOWE",updated:"AKTUALIZACJA",results:"ZDARZEŃ",ago:"godz. temu",mins:"min temu",source:"ŹRÓDŁO",date:"DATA OBSERWACJI",coordinates:"WSPÓŁRZĘDNE",magnitude:"MAGNITUDA",depth:"GŁĘBOKOŚĆ",close:"ZAMKNIJ",link:"OTWÓRZ ŹRÓDŁO ↗",disclaimer:"DANE MOGĄ BYĆ OPÓŹNIONE · NIE SŁUŻĄ DO OSTRZEŻEŃ"},
+en:{skip:"Skip to event feed",home:"Earth Live — home",studio:"impuls. Digital Studio — studio website",zoomIn:"Zoom in",zoomOut:"Zoom out",resetView:"Reset view",refresh:"Refresh events",searchLabel:"Search events",strap:"✳  PLANETARY OBSERVATION SYSTEM  / 001",eyebrow:"THE LIVING PLANET",hero:"Earth.<br><em>In motion.</em>",intro:"One planet. Thousands of signals. Explore the natural events shaping our world.",time:"TIME WINDOW",hints:{1:"Events from the past 24 hours.",7:"Events from the past 7 days.",30:"Events from the past 30 days."},layer:"DATA LAYERS",labels:{all:"All phenomena",earthquakes:"Earthquakes",wildfires:"Wildfires",severeStorms:"Storms & cyclones",volcanoes:"Volcanoes",other:"Other events"},events:"EVENTS",quakes:"QUAKES M2.5+",stage:"◎ GLOBAL EVENT MONITOR",drag:"DRAG TO ROTATE · SCROLL TO ZOOM",feedKicker:"EVENT FEED",feedTitle:"On the radar",feedSubtitle:"Latest natural phenomena from around the world.",search:"Search an event...",newest:"NEWEST FIRST ↓",live:"LIVE DATA",empty:"No events match this filter.",error:"Data sources unavailable. Please refresh.",partial:"PARTIAL DATA",updated:"UPDATED",results:"RESULTS",ago:"hours ago",mins:"min ago",source:"SOURCE",date:"OBSERVED",coordinates:"COORDINATES",magnitude:"MAGNITUDE",depth:"DEPTH",close:"CLOSE",link:"VIEW ORIGINAL SOURCE ↗",disclaimer:"DATA MAY BE DELAYED · NOT FOR EMERGENCY WARNINGS"}
 };
-var state={days:1,layer:"all",query:"",lang:"pl",events:[],globe:null,loading:false,failed:false,errors:[],updated:0,request:0,controller:null,selected:null,hovered:null,hoverRelease:null,detailOrigin:"globe",detailMountedMobile:false};
+var state={days:1,layer:"all",query:"",lang:"pl",events:[],globe:null,loading:false,failed:false,errors:[],updated:0,request:0,controller:null,selected:null,hovered:null,hoverRelease:null,detailOrigin:"globe",detailMountedMobile:false,globeInView:true,renderPaused:false};
 try{if(localStorage.getItem("earth-live-lang")==="en")state.lang="en";}catch(e){}
 var t=function(k){return dictionaries[state.lang][k];};
+var motionPreference=matchMedia("(prefers-reduced-motion: reduce)");
+function cameraDuration(ms){return motionPreference.matches||state.renderPaused?0:ms;}
+function setPressed(button,active){button.classList.toggle("active",active);button.setAttribute("aria-pressed",String(active));}
 function valid(lat,lng){return Number.isFinite(lat)&&Number.isFinite(lng)&&lat>=-90&&lat<=90&&lng>=-180&&lng<=180;}
 function point(g){if(!g||!Array.isArray(g.coordinates))return null;var c=g.coordinates;if(g.type==="Point"){var lng=Number(c[0]),lat=Number(c[1]);return valid(lat,lng)?{lat:lat,lng:lng}:null;}var ring=g.type==="Polygon"?c[0]:g.type==="MultiPolygon"&&c[0]?c[0][0]:null;if(!Array.isArray(ring))return null;var sumLat=0,sumSin=0,sumCos=0,n=0;ring.forEach(function(p){var lng=Number(p[0]),lat=Number(p[1]);if(valid(lat,lng)){n++;sumLat+=lat;sumSin+=Math.sin(lng*Math.PI/180);sumCos+=Math.cos(lng*Math.PI/180);}});return n?{lat:sumLat/n,lng:Math.atan2(sumSin,sumCos)*180/Math.PI}:null;}
 function category(event){var ids=(event.categories||[]).map(function(c){return String(c.id).toLowerCase();});return ids.includes("wildfires")?"wildfires":ids.includes("severestorms")?"severeStorms":ids.includes("volcanoes")?"volcanoes":"other";}
@@ -150,7 +160,7 @@ if(state.globe){
   state.globe.htmlElementsData(markers);
   $("#markerStatus").textContent=(state.lang==="pl"?"ZNACZNIKI ":"MARKERS ")+markers.length.toLocaleString()+" / "+events.length.toLocaleString();
 }}
-function translate(){var d=dictionaries[state.lang];document.documentElement.lang=state.lang;$$("[data-lang]").forEach(function(b){var active=b.dataset.lang===state.lang;b.classList.toggle("active",active);b.setAttribute("aria-pressed",String(active));});$("#strap").textContent=d.strap;$("#eyebrow").textContent=d.eyebrow;$("#hero").innerHTML=d.hero;$("#intro").textContent=d.intro;$("#timeLabel").textContent=d.time;$("#hint").textContent=d.hints[state.days];$("#layerLabel").textContent=d.layer;Object.keys(d.labels).forEach(function(k){$("#l-"+k).textContent=d.labels[k];});$("#eventsLabel").textContent=d.events;$("#quakesLabel").textContent=d.quakes;$("#stageLabel").textContent=d.stage;$("#drag").textContent=d.drag;$("#feedKicker").textContent=d.feedKicker;$("#feedTitle").innerHTML=safe(d.feedTitle)+"<i>.</i>";$("#feedSubtitle").textContent=d.feedSubtitle;$("#search").placeholder=d.search;$("#newest").textContent=d.newest;$("#live").textContent=d.live;$("#disclaimer").textContent=d.disclaimer;render();if(state.selected)detail(state.selected);}
+function translate(){var d=dictionaries[state.lang];document.documentElement.lang=state.lang;$("#skipFeed").textContent=d.skip;$("#homeLink").setAttribute("aria-label",d.home);$("#studioLink").setAttribute("aria-label",d.studio);$("#plus").setAttribute("aria-label",d.zoomIn);$("#minus").setAttribute("aria-label",d.zoomOut);$("#reset").setAttribute("aria-label",d.resetView);$("#refresh").setAttribute("aria-label",d.refresh);$("#searchLabel").textContent=d.searchLabel;$$("[data-lang]").forEach(function(b){var active=b.dataset.lang===state.lang;setPressed(b,active);});$("#strap").textContent=d.strap;$("#eyebrow").textContent=d.eyebrow;$("#hero").innerHTML=d.hero;$("#intro").textContent=d.intro;$("#timeLabel").textContent=d.time;$("#hint").textContent=d.hints[state.days];$("#layerLabel").textContent=d.layer;Object.keys(d.labels).forEach(function(k){$("#l-"+k).textContent=d.labels[k];});$("#eventsLabel").textContent=d.events;$("#quakesLabel").textContent=d.quakes;$("#stageLabel").textContent=d.stage;$("#drag").textContent=d.drag;$("#feedKicker").textContent=d.feedKicker;$("#feedTitle").innerHTML=safe(d.feedTitle)+"<i>.</i>";$("#feedSubtitle").textContent=d.feedSubtitle;$("#search").placeholder=d.search;$("#newest").textContent=d.newest;$("#live").textContent=d.live;$("#disclaimer").textContent=d.disclaimer;render();if(state.selected)detail(state.selected);}
 function positionDetail(shouldScroll){
  var panel=$("#detail"),right=$(".right"),feed=$("#feed");
  if(matchMedia("(max-width:670px)").matches){
@@ -161,7 +171,7 @@ function positionDetail(shouldScroll){
   }else right.insertBefore(panel,feed);
   state.detailMountedMobile=true;
   if(shouldScroll&&typeof panel.scrollIntoView==="function"){
-   panel.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:state.detailOrigin==="globe"?"start":"nearest"});
+   panel.scrollIntoView({behavior:motionPreference.matches?"auto":"smooth",block:state.detailOrigin==="globe"?"start":"nearest"});
   }
  }else if(state.detailMountedMobile){
   right.insertBefore(panel,$("#update"));
@@ -183,7 +193,7 @@ function detail(e,origin){
  div.querySelector("p").textContent=e.description;div.querySelector("p").hidden=!e.description;
  $("#detailClose").addEventListener("click",closeDetail);
  positionDetail(!!origin);
- if(state.globe){state.globe.controls().autoRotate=false;state.globe.pointOfView({lat:e.lat,lng:e.lng,altitude:1.65},900);}
+ if(state.globe){state.globe.controls().autoRotate=false;state.globe.pointOfView({lat:e.lat,lng:e.lng,altitude:1.65},cameraDuration(900));}
 }
 function closeDetail(){
  state.selected=null;
@@ -191,7 +201,7 @@ function closeDetail(){
  if(state.detailMountedMobile){$(".right").insertBefore($("#detail"),$("#update"));state.detailMountedMobile=false;}
  resumeRotation();
 }
-function setLayer(k){state.layer=k;$$(".layer").forEach(function(b){b.classList.toggle("active",b.dataset.layer===k);});if(state.selected&&!filtered().some(function(e){return e.id===state.selected.id;}))closeDetail();render();}
+function setLayer(k){state.layer=k;$$(".layer").forEach(function(b){setPressed(b,b.dataset.layer===k);});if(state.selected&&!filtered().some(function(e){return e.id===state.selected.id;}))closeDetail();render();}
 async function load(){if(state.selected)closeDetail();hideHover();state.controller&&state.controller.abort();var controller=new AbortController(),id=++state.request;state.controller=controller;state.loading=true;state.failed=false;state.errors=[];state.events=[];render();var tm=setTimeout(function(){controller.abort();},14000);
 try{var urls={usgs:"https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_"+({1:"day",7:"week",30:"month"}[state.days])+".geojson",nasa:"https://eonet.gsfc.nasa.gov/api/v3/events?status=all&days="+state.days+"&limit=800"};
 var requests=await Promise.allSettled([fetch(urls.usgs,{signal:controller.signal}).then(function(r){if(!r.ok)throw Error("USGS HTTP "+r.status);return r.json();}).then(qData),fetch(urls.nasa,{signal:controller.signal}).then(function(r){if(!r.ok)throw Error("NASA HTTP "+r.status);return r.json();}).then(nData)]);if(id!==state.request)return;
@@ -202,9 +212,19 @@ function resumeRotation(){
  if(!state.globe)return;
  var paused=!!state.hovered||!!state.selected;
  var controls=state.globe.controls();
- controls.autoRotate=!paused&&!matchMedia("(prefers-reduced-motion: reduce)").matches;
+ controls.autoRotate=!paused&&!document.hidden&&state.globeInView&&!motionPreference.matches;
  // Disable residual OrbitControls damping while inspecting an event.
- controls.enableDamping=!paused;
+ controls.enableDamping=!paused&&!motionPreference.matches;
+}
+// Pause the WebGL frame loop outside the viewport or in a background tab.
+function syncGlobeRendering(){
+ var g=state.globe;if(!g)return;
+ var shouldPause=document.hidden||!state.globeInView;
+ if(typeof g.pauseAnimation==="function"&&typeof g.resumeAnimation==="function"&&shouldPause!==state.renderPaused){
+  if(shouldPause)g.pauseAnimation();else g.resumeAnimation();
+  state.renderPaused=shouldPause;
+ }
+ resumeRotation();
 }
 function cancelHoverRelease(){
  if(state.hoverRelease!==null){clearTimeout(state.hoverRelease);state.hoverRelease=null;}
@@ -345,15 +365,24 @@ function startGlobe(){
   var resize=function(){var r=host.getBoundingClientRect();if(r.width&&r.height)g.width(r.width).height(r.height);};
   new ResizeObserver(resize).observe(host);resize();
   render();loadBorders(g);
+  if(typeof IntersectionObserver==="function"){
+   new IntersectionObserver(function(entries){
+    state.globeInView=entries[0].isIntersecting;syncGlobeRendering();
+   },{rootMargin:"100px"}).observe(host);
+  }
+  syncGlobeRendering();
   $("#globeWarning").hidden=true;
  }catch(error){state.globe=null;showGlobeError("WebGL initialization failed",error);}
 }
 
-$$("[data-days]").forEach(function(b){b.addEventListener("click",function(){var v=Number(b.dataset.days);if(state.days===v)return;state.days=v;$$("[data-days]").forEach(function(x){x.classList.toggle("active",x===b);});$("#hint").textContent=t("hints")[v];closeDetail();load();});});
+$$("[data-days]").forEach(function(b){b.addEventListener("click",function(){var v=Number(b.dataset.days);if(state.days===v)return;state.days=v;$$("[data-days]").forEach(function(x){setPressed(x,x===b);});$("#hint").textContent=t("hints")[v];closeDetail();load();});});
 $$("[data-layer]").forEach(function(b){b.addEventListener("click",function(){setLayer(b.dataset.layer);});});
 $("#search").addEventListener("input",function(e){state.query=e.target.value.trim().toLowerCase();if(state.selected&&!filtered().some(function(row){return row.id===state.selected.id;}))closeDetail();render();});$$("[data-lang]").forEach(function(b){b.addEventListener("click",function(){var next=b.dataset.lang;if((next!=="pl"&&next!=="en")||next===state.lang)return;state.lang=next;try{localStorage.setItem("earth-live-lang",state.lang);}catch(e){}translate();});});$("#refresh").addEventListener("click",load);
 window.addEventListener("resize",function(){if(state.selected&&!$("#detail").hidden)positionDetail(false);});
-$("#plus").addEventListener("click",function(){if(state.globe){var v=state.globe.pointOfView();v.altitude=Math.max(.7,v.altitude*.75);state.globe.pointOfView(v,500);}});$("#minus").addEventListener("click",function(){if(state.globe){var v=state.globe.pointOfView();v.altitude=Math.min(5,v.altitude*1.3);state.globe.pointOfView(v,500);}});$("#reset").addEventListener("click",function(){closeDetail();if(state.globe)state.globe.pointOfView({lat:20,lng:15,altitude:2.2},900);});window.addEventListener("keydown",function(e){if(e.key==="Escape")closeDetail();});
+$("#plus").addEventListener("click",function(){if(state.globe){var v=state.globe.pointOfView();v.altitude=Math.max(.7,v.altitude*.75);state.globe.pointOfView(v,cameraDuration(500));}});$("#minus").addEventListener("click",function(){if(state.globe){var v=state.globe.pointOfView();v.altitude=Math.min(5,v.altitude*1.3);state.globe.pointOfView(v,cameraDuration(500));}});$("#reset").addEventListener("click",function(){closeDetail();if(state.globe)state.globe.pointOfView({lat:20,lng:15,altitude:2.2},cameraDuration(900));});window.addEventListener("keydown",function(e){if(e.key==="Escape")closeDetail();});
+document.addEventListener("visibilitychange",syncGlobeRendering);
+if(typeof motionPreference.addEventListener==="function")motionPreference.addEventListener("change",resumeRotation);
+else if(typeof motionPreference.addListener==="function")motionPreference.addListener(resumeRotation);
 translate();load();loadGlobeLibrary();setInterval(function(){if(!document.hidden&&!state.loading)load();},300000);
 })();
 </script>
