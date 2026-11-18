@@ -28,11 +28,6 @@ jobs:
                   im.save(f'textures/{name}.webp', format='WEBP', quality=quality, method=6)
           PY
           wc -c /tmp/earth-blue-marble.jpg /tmp/earth-topology.png textures/*.webp
-          for asset in textures/*.webp; do
-            echo "ASSET_BEGIN:$asset"
-            base64 -w 3000 "$asset" | sed 's/^/ASSET_DATA:/'
-            echo "ASSET_END:$asset"
-          done
       - uses: actions/upload-artifact@v4
         with:
           name: optimized-earth-textures
