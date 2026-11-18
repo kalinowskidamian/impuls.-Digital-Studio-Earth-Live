@@ -18,9 +18,15 @@ jobs:
           mkdir -p textures
           curl -fsSL --retry 3 https://unpkg.com/three-globe@2.45.6/example/img/earth-blue-marble.jpg -o /tmp/earth-blue-marble.jpg
           curl -fsSL --retry 3 https://unpkg.com/three-globe@2.45.6/example/img/earth-topology.png -o /tmp/earth-topology.png
-          convert /tmp/earth-blue-marble.jpg -strip -quality 82 -define webp:method=6 textures/earth-blue-marble.webp
-          convert /tmp/earth-topology.png -strip -quality 88 -define webp:method=6 textures/earth-topology.webp
-          identify /tmp/earth-blue-marble.jpg /tmp/earth-topology.png textures/*.webp
+          python3 -m venv /tmp/earth-textures-venv
+          /tmp/earth-textures-venv/bin/pip install --quiet Pillow
+          /tmp/earth-textures-venv/bin/python - <<'PY'
+          from PIL import Image
+          for name, ext, quality in [('earth-blue-marble','jpg',82),('earth-topology','png',88)]:
+              with Image.open(f'/tmp/{name}.{ext}') as im:
+                  print(name, im.size)
+                  im.save(f'textures/{name}.webp', format='WEBP', quality=quality, method=6)
+          PY
           wc -c /tmp/earth-blue-marble.jpg /tmp/earth-topology.png textures/*.webp
           for asset in textures/*.webp; do
             echo "ASSET_BEGIN:$asset"
