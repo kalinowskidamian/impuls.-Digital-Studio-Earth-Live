@@ -22,3 +22,5 @@ jobs:
         run: node scripts/verify-map-interactions.cjs
       - name: Verify batched country borders
         run: node scripts/verify-border-batching.cjs
+      - name: Verify adaptive WebGL framebuffer quality
+        run: node scripts/verify-adaptive-rendering.cjs

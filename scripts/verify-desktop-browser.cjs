@@ -23,6 +23,7 @@ const {chromium}=require("playwright");
   await page.locator("#reset").click();
   await page.screenshot({path:"browser-audit/desktop-smoke.png"});
   assert.deepEqual(errors,[]);
-  console.log("Desktop WebGL smoke PASS",JSON.stringify(textures));
+  const timings=await page.evaluate(()=>performance.getEntriesByType("mark").filter(e=>e.name.startsWith("earth-live:")).map(e=>e.name));
+  console.log("Desktop WebGL smoke PASS",JSON.stringify({textures,timings}));
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

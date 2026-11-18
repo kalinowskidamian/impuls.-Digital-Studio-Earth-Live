@@ -231,6 +231,40 @@ function syncGlobeRendering(){
  }
  resumeRotation();
 }
+// Scale only the WebGL framebuffer when measured frame pacing is poor.
+// CSS dimensions, textures, camera positions and HTML markers stay unchanged.
+// Fast GPUs retain the original resolution; recover gradually after sustained
+// smooth rendering. No device, browser or audit-tool detection is involved.
+function monitorGlobeQuality(globe,renderer){
+ if(!renderer||typeof renderer.getPixelRatio!=="function"||typeof renderer.setPixelRatio!=="function"||typeof window.requestAnimationFrame!=="function")return;
+ var maximum=renderer.getPixelRatio(),minimum=Math.min(maximum,Math.max(.55,maximum*.55));
+ var previous=0,samples=[],slow=0,fast=0;
+ function frame(now){
+  if(state.globe!==globe)return;
+  if(document.hidden||!state.globeInView){
+   previous=0;samples=[];slow=0;fast=0;
+  }else{
+   if(previous&&now>previous)samples.push(Math.min(250,now-previous));
+   previous=now;
+   if(samples.length===12){
+    var sorted=samples.slice().sort(function(a,b){return a-b;});
+    var median=(sorted[5]+sorted[6])/2;
+    samples=[];
+    slow=median>45?slow+1:0;
+    fast=median<19?fast+1:0;
+    var current=renderer.getPixelRatio(),next=current;
+    if(slow>=2&&current>minimum+.01){next=Math.max(minimum,current*.75);slow=0;fast=0;}
+    else if(fast>=10&&current<maximum-.01){next=Math.min(maximum,current*1.15);slow=0;fast=0;}
+    if(next!==current){
+     renderer.setPixelRatio(next);
+     if(typeof performance!=="undefined"&&typeof performance.mark==="function")performance.mark("earth-live:pixel-ratio-"+next.toFixed(2));
+    }
+   }
+  }
+  window.requestAnimationFrame(frame);
+ }
+ window.requestAnimationFrame(frame);
+}
 function cancelHoverRelease(){
  if(state.hoverRelease!==null){clearTimeout(state.hoverRelease);state.hoverRelease=null;}
 }
@@ -453,6 +487,7 @@ function startGlobe(){
    },{rootMargin:"100px"}).observe(host);
   }
   syncGlobeRendering();
+  monitorGlobeQuality(g,renderer);
   $("#globeWarning").hidden=true;
  }catch(error){state.globe=null;showGlobeError("WebGL initialization failed",error);}
 }
