@@ -7,6 +7,7 @@
 <title>Earth Live | impuls. Digital Studio</title>
 <link rel="icon" type="image/svg+xml" sizes="any" href="/favicon.svg?v=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{color-scheme:dark;--bg:#080c19;--line:#30334d;--text:#f2f4ff;--muted:#9aa2bb;--accent:#aaa3ff;--mint:#8ce5c9}
@@ -132,7 +133,7 @@ var dictionaries={
 pl:{skip:"Przejdź do listy zdarzeń",home:"Earth Live — strona główna",studio:"impuls. Digital Studio — strona studia",zoomIn:"Powiększ",zoomOut:"Pomniejsz",resetView:"Przywróć widok",refresh:"Odśwież zdarzenia",searchLabel:"Szukaj zdarzenia",strap:"✳  SYSTEM OBSERWACJI PLANETY  / 001",eyebrow:"ŻYJĄCA PLANETA",hero:"Ziemia.<br><em>Na żywo.</em>",intro:"Jedna planeta. Tysiące sygnałów. Odkrywaj naturalne zjawiska, które kształtują nasz świat.",time:"PRZEDZIAŁ CZASU",hints:{1:"Wydarzenia z ostatnich 24 godzin.",7:"Wydarzenia z ostatnich 7 dni.",30:"Wydarzenia z ostatnich 30 dni."},layer:"WARSTWY DANYCH",labels:{all:"Wszystkie zjawiska",earthquakes:"Trzęsienia ziemi",wildfires:"Pożary",severeStorms:"Burze i cyklony",volcanoes:"Wulkany",other:"Pozostałe zjawiska"},events:"ZDARZEŃ",quakes:"WSTRZĄSÓW M2.5+",stage:"◎ GLOBALNY MONITOR ZDARZEŃ",drag:"PRZECIĄGNIJ, ABY OBRÓCIĆ · SCROLL, ABY PRZYBLIŻYĆ",feedKicker:"STRUMIEŃ ZDARZEŃ",feedTitle:"Na radarze",feedSubtitle:"Najświeższe zjawiska z całego świata.",search:"Szukaj zdarzenia...",newest:"NAJNOWSZE ↓",live:"DANE NA ŻYWO",empty:"Brak zdarzeń dla wybranego filtra.",error:"Źródła danych niedostępne. Spróbuj odświeżyć.",partial:"DANE CZĘŚCIOWE",updated:"AKTUALIZACJA",results:"ZDARZEŃ",ago:"godz. temu",mins:"min temu",source:"ŹRÓDŁO",date:"DATA OBSERWACJI",coordinates:"WSPÓŁRZĘDNE",magnitude:"MAGNITUDA",depth:"GŁĘBOKOŚĆ",close:"ZAMKNIJ",link:"OTWÓRZ ŹRÓDŁO ↗",disclaimer:"DANE MOGĄ BYĆ OPÓŹNIONE · NIE SŁUŻĄ DO OSTRZEŻEŃ"},
 en:{skip:"Skip to event feed",home:"Earth Live — home",studio:"impuls. Digital Studio — studio website",zoomIn:"Zoom in",zoomOut:"Zoom out",resetView:"Reset view",refresh:"Refresh events",searchLabel:"Search events",strap:"✳  PLANETARY OBSERVATION SYSTEM  / 001",eyebrow:"THE LIVING PLANET",hero:"Earth.<br><em>In motion.</em>",intro:"One planet. Thousands of signals. Explore the natural events shaping our world.",time:"TIME WINDOW",hints:{1:"Events from the past 24 hours.",7:"Events from the past 7 days.",30:"Events from the past 30 days."},layer:"DATA LAYERS",labels:{all:"All phenomena",earthquakes:"Earthquakes",wildfires:"Wildfires",severeStorms:"Storms & cyclones",volcanoes:"Volcanoes",other:"Other events"},events:"EVENTS",quakes:"QUAKES M2.5+",stage:"◎ GLOBAL EVENT MONITOR",drag:"DRAG TO ROTATE · SCROLL TO ZOOM",feedKicker:"EVENT FEED",feedTitle:"On the radar",feedSubtitle:"Latest natural phenomena from around the world.",search:"Search an event...",newest:"NEWEST FIRST ↓",live:"LIVE DATA",empty:"No events match this filter.",error:"Data sources unavailable. Please refresh.",partial:"PARTIAL DATA",updated:"UPDATED",results:"RESULTS",ago:"hours ago",mins:"min ago",source:"SOURCE",date:"OBSERVED",coordinates:"COORDINATES",magnitude:"MAGNITUDE",depth:"DEPTH",close:"CLOSE",link:"VIEW ORIGINAL SOURCE ↗",disclaimer:"DATA MAY BE DELAYED · NOT FOR EMERGENCY WARNINGS"}
 };
-var state={days:1,layer:"all",query:"",lang:"pl",events:[],globe:null,loading:false,failed:false,errors:[],updated:0,request:0,controller:null,selected:null,hovered:null,hoverRelease:null,detailOrigin:"globe",detailMountedMobile:false,globeInView:true,renderPaused:false};
+var state={days:1,layer:"all",query:"",lang:"pl",events:[],globe:null,globeRequested:false,loading:false,failed:false,errors:[],updated:0,request:0,controller:null,selected:null,hovered:null,hoverRelease:null,detailOrigin:"globe",detailMountedMobile:false,globeInView:true,renderPaused:false};
 try{if(localStorage.getItem("earth-live-lang")==="en")state.lang="en";}catch(e){}
 var t=function(k){return dictionaries[state.lang][k];};
 var motionPreference=matchMedia("(prefers-reduced-motion: reduce)");
@@ -146,13 +147,17 @@ function qData(json){if(!Array.isArray(json.features))throw Error("Invalid USGS 
 function nData(json){if(!Array.isArray(json.events))throw Error("Invalid NASA payload");return json.events.flatMap(function(e){var geometries=(e.geometry||[]).slice().sort(function(a,b){return Date.parse(b.date)-Date.parse(a.date);}),p=null,g=null;for(var i=0;i<geometries.length;i++){p=point(geometries[i]);if(p){g=geometries[i];break;}}if(!g)return [];var ms=Date.parse(g.date);if(!Number.isFinite(ms))return [];var s=(e.sources||[]).find(function(x){return link(x.url,null)!==null;});return [{id:"nasa:"+e.id,title:String(e.title||"Natural event"),category:category(e),lat:p.lat,lng:p.lng,mag:g.magnitudeValue,ms:ms,source:"NASA EONET",url:link(s&&s.url,"https://eonet.gsfc.nasa.gov/"),description:String(e.description||"")}];});}
 function safe(text){return String(text==null?"":text).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
 function filtered(){return state.events.filter(function(e){return (state.layer==="all"||e.category===state.layer)&&(!state.query||(e.title+" "+e.source).toLowerCase().includes(state.query));});}
-function relative(ms){var m=Math.max(0,Math.floor((Date.now()-ms)/60000));if(m<60)return m+" "+t("mins");if(m<1440)return Math.floor(m/60)+" "+t("ago");return new Intl.DateTimeFormat(state.lang==="pl"?"pl-PL":"en-GB",{day:"2-digit",month:"short"}).format(ms);}
+var shortDateFormats={};
+function relative(ms){var m=Math.max(0,Math.floor((Date.now()-ms)/60000));if(m<60)return m+" "+t("mins");if(m<1440)return Math.floor(m/60)+" "+t("ago");var lang=state.lang;var format=shortDateFormats[lang]||(shortDateFormats[lang]=new Intl.DateTimeFormat(lang==="pl"?"pl-PL":"en-GB",{day:"2-digit",month:"short"}));return format.format(ms);}
 function render(){var counts={all:state.events.length,earthquakes:0,wildfires:0,severeStorms:0,volcanoes:0,other:0};state.events.forEach(function(e){counts[e.category]++;});Object.keys(counts).forEach(function(k){var node=$('[data-count="'+k+'"]');if(node)node.textContent=state.failed?"—":counts[k].toLocaleString();});$("#total").textContent=state.failed?"—":counts.all.toLocaleString();$("#quakes").textContent=state.failed?"—":counts.earthquakes.toLocaleString();
 var events=filtered(),feed=$("#feed");$("#results").textContent=events.length+" "+t("results");
 if(state.loading&&!state.events.length){feed.innerHTML='<div class="empty">● ● ●</div>';}else if(state.failed){feed.innerHTML='<div class="empty">'+safe(t("error"))+'</div>';}else if(!events.length){feed.innerHTML='<div class="empty">'+safe(t("empty"))+'</div>';}else{feed.replaceChildren();events.slice(0,150).forEach(function(e){var b=document.createElement("button"),color=colors[e.category]||colors.other;b.className="item";b.type="button";b.innerHTML='<span class="glyph" style="color:'+color+'">'+glyph[e.category]+'</span><span class="item-main"><span class="kind" style="color:'+color+'">'+safe(t("labels")[e.category])+(e.category==="earthquakes"?" / M"+e.mag.toFixed(1):"")+'</span><span class="item-title"></span><span class="item-meta"><span>'+safe(e.source)+'</span><span>'+safe(relative(e.ms))+'</span></span></span>';b.querySelector(".item-title").textContent=e.title;b.dataset.eventId=e.id;b.addEventListener("click",function(){detail(e,"feed");});feed.appendChild(b);});}
 if(state.selected&&!$("#detail").hidden)positionDetail(false);
 if(state.failed)$("#update").textContent=t("error");else if(state.errors.length)$("#update").textContent=t("partial")+": "+state.errors.join(", ");else if(state.updated)$("#update").textContent=t("updated")+": "+new Intl.DateTimeFormat(state.lang==="pl"?"pl-PL":"en-GB",{hour:"2-digit",minute:"2-digit"}).format(state.updated)+" / USGS + NASA";else $("#update").textContent="CONNECTING...";
-if(state.globe){
+renderGlobe(events);
+}
+function renderGlobe(events){
+ if(state.globe){
   // The event feed and 3D map use the same filtered set.
   // A hard display budget protects mobile performance; the counter is explicit.
   var markers=events.slice(0,800);
@@ -317,6 +322,8 @@ warning.textContent=state.lang==="pl"?"Nie udało się uruchomić globusa 3D. Sp
 console.error("[Earth Live] "+reason,error||"");
 }
 function loadGlobeLibrary(){
+if(state.globeRequested)return;
+state.globeRequested=true;
 var urls=["https://cdn.jsdelivr.net/npm/globe.gl@2.27.1/dist/globe.gl.min.js","https://unpkg.com/globe.gl@2.27.1/dist/globe.gl.min.js"];
 var index=0;
 var warning=$("#globeWarning");
@@ -341,6 +348,24 @@ document.head.appendChild(script);
 }
 tryNext();
 }
+// On narrow screens the controls and introduction precede the planet.
+// Load its heavy 3D library as the viewer approaches a meaningful part of the stage.
+// Desktop and browsers without IntersectionObserver retain eager initialization.
+function scheduleGlobe(){
+ if(!matchMedia("(max-width:670px)").matches||typeof IntersectionObserver!=="function"){
+  loadGlobeLibrary();return;
+ }
+ var host=$("#globe");
+ var observer=new IntersectionObserver(function(entries){
+  if(entries.some(function(entry){return entry.isIntersecting&&entry.intersectionRatio>=.25;})){
+   observer.disconnect();loadGlobeLibrary();
+  }
+ },{threshold:.25});
+ observer.observe(host);
+ // A keyboard or pointer interaction requests the globe even before the threshold.
+ $(".stage").addEventListener("focusin",function(){observer.disconnect();loadGlobeLibrary();},{once:true});
+ $(".stage").addEventListener("pointerdown",function(){observer.disconnect();loadGlobeLibrary();},{once:true});
+}
 function startGlobe(){
  if(state.globe)return;
  if(typeof window.Globe!=="function"){showGlobeError("Globe.GL library is unavailable");return;}
@@ -358,13 +383,19 @@ function startGlobe(){
    .pathColor(function(){return "rgba(168,198,236,0.24)";})
    .pathPointAlt(.004).pathStroke(null).pathTransitionDuration(0);
   state.globe=g;
+  // Avoid rendering 9+ physical pixels per CSS pixel on high-density phones.
+  // Retain antialiasing and the original quality on displays at or below 2x.
+  if(typeof g.renderer==="function"){
+   var renderer=g.renderer();
+   if(renderer&&typeof renderer.getPixelRatio==="function"&&typeof renderer.setPixelRatio==="function"&&renderer.getPixelRatio()>2)renderer.setPixelRatio(2);
+  }
   g.controls().autoRotateSpeed=.33;
   g.controls().enableDamping=true;
   resumeRotation();
-  g.pointOfView({lat:20,lng:15,altitude:2.2},0);
+  g.pointOfView(state.selected?{lat:state.selected.lat,lng:state.selected.lng,altitude:1.65}:{lat:20,lng:15,altitude:2.2},0);
   var resize=function(){var r=host.getBoundingClientRect();if(r.width&&r.height)g.width(r.width).height(r.height);};
   new ResizeObserver(resize).observe(host);resize();
-  render();loadBorders(g);
+  renderGlobe(filtered());loadBorders(g);
   if(typeof IntersectionObserver==="function"){
    new IntersectionObserver(function(entries){
     state.globeInView=entries[0].isIntersecting;syncGlobeRendering();
@@ -383,7 +414,7 @@ $("#plus").addEventListener("click",function(){if(state.globe){var v=state.globe
 document.addEventListener("visibilitychange",syncGlobeRendering);
 if(typeof motionPreference.addEventListener==="function")motionPreference.addEventListener("change",resumeRotation);
 else if(typeof motionPreference.addListener==="function")motionPreference.addListener(resumeRotation);
-translate();load();loadGlobeLibrary();setInterval(function(){if(!document.hidden&&!state.loading)load();},300000);
+translate();load();scheduleGlobe();setInterval(function(){if(!document.hidden&&!state.loading)load();},300000);
 })();
 </script>
 </body>

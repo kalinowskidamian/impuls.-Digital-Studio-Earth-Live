@@ -8,10 +8,12 @@ const html = fs.readFileSync("public/index.html", "utf8");
 const match = html.match(/<script>([\s\S]*?)<\/script>/);
 assert.ok(match, "Inline Earth Live application script must exist");
 
-function createHarness() {
+function createHarness({mobile=false,observer=true,pixelRatio=3}={}) {
   const elements = new Map();
   const requestedScripts = [];
   let globeInstances = 0;
+  let ratio=pixelRatio,ratioChanges=0;
+  const observers=[];
 
   function element(selector) {
     if (!elements.has(selector)) {
@@ -22,7 +24,8 @@ function createHarness() {
         value: "",
         classList: { toggle() {} },
         setAttribute() {},
-        addEventListener() {},
+        listeners:{},
+        addEventListener(type,fn) { this.listeners[type]=fn; },
         getBoundingClientRect() { return { width: 730, height: 700 }; }
       });
     }
@@ -50,6 +53,7 @@ function createHarness() {
   const globe = new Proxy({}, {
     get(_target, key) {
       if (key === "controls") return () => ({ autoRotate: false, enableDamping: false });
+      if (key === "renderer") return () => ({getPixelRatio:()=>ratio,setPixelRatio:value=>{ratio=value;ratioChanges++;}});
       if (key === "pointOfView") return (...args) => args.length ? globe : { altitude: 2 };
       return () => globe;
     }
@@ -64,9 +68,14 @@ function createHarness() {
     setTimeout() { return 1; },
     clearTimeout() {},
     setInterval() { return 1; },
-    matchMedia() { return { matches: false }; },
+    matchMedia(query) { return { matches: query==="(max-width:670px)"&&mobile }; },
     ResizeObserver: class { observe() {} },
     console,
+  };
+  if(observer)context.IntersectionObserver=class {
+    constructor(fn,options){this.fn=fn;this.options=options;observers.push(this);}
+    observe() {}
+    disconnect(){this.disconnected=true;}
   };
 
   vm.runInNewContext(match[1], context, { filename: "public/index.html" });
@@ -74,6 +83,9 @@ function createHarness() {
   return {
     elements,
     requestedScripts,
+    observers,
+    get pixelRatio(){return ratio;},
+    get ratioChanges(){return ratioChanges;},
     setGlobeAvailable() {
       window.Globe = () => {
         globeInstances += 1;
@@ -94,6 +106,39 @@ function createHarness() {
   app.requestedScripts[0].onload();
   assert.equal(app.globeInstances, 1, "Globe must initialize after CDN load");
   assert.equal(app.elements.get("#globeWarning").hidden, true);
+  assert.equal(app.pixelRatio,2,"High density renderer is capped at 2x");
+}
+
+// Mobile: the feed loads independently, and the globe downloads once near the stage.
+{
+  const app=createHarness({mobile:true,pixelRatio:1.5});
+  assert.equal(app.requestedScripts.length,0,"No 3D download when the mobile globe is offscreen");
+  const watch=app.observers[0];
+  assert.equal(watch.options.threshold,.25);
+  watch.fn([{isIntersecting:true,intersectionRatio:.1}]);
+  assert.equal(app.requestedScripts.length,0,"A sliver of the stage should not start the expensive download");
+  watch.fn([{isIntersecting:true,intersectionRatio:.25}]);
+  assert.equal(app.requestedScripts.length,1);
+  assert.ok(watch.disconnected);
+  app.elements.get(".stage").listeners.focusin();
+  assert.equal(app.requestedScripts.length,1,"Keyboard focus must not duplicate the library download");
+  app.setGlobeAvailable();app.requestedScripts[0].onload();
+  assert.equal(app.pixelRatio,1.5,"Standard density displays retain their rendering quality");
+  assert.equal(app.ratioChanges,0);
+}
+
+// Without IntersectionObserver, keep the original eager behaviour.
+{
+  const app=createHarness({mobile:true,observer:false});
+  assert.equal(app.requestedScripts.length,1);
+}
+
+// Keyboard users can request the globe without waiting for the observer.
+{
+  const app=createHarness({mobile:true});
+  app.elements.get(".stage").listeners.focusin();
+  assert.equal(app.requestedScripts.length,1);
+  assert.ok(app.observers[0].disconnected);
 }
 
 // First CDN fails: the alternative is loaded, then the globe initializes.

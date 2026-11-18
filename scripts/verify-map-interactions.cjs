@@ -52,6 +52,7 @@ async function main(){
  const pendingTimers=new Map();let nextTimerId=0;
  const g = new Proxy({}, {get(_obj,key){
   if(key==="controls")return ()=>controls;
+  if(key==="renderer")return ()=>({getPixelRatio:()=>2,setPixelRatio:()=>{throw Error("Do not change standard density");}});
   if(key==="htmlElement")return (value)=>{calls.createMarker=value;return g;};
   if(key==="htmlElementsData")return (value)=>{calls.markers=value;return g;};
   if(key==="pathsData")return (value)=>{calls.paths=value;return g;};
