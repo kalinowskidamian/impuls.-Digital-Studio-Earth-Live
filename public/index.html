@@ -337,56 +337,12 @@ function borderPaths(topology){
   return points.length>1?{points:points}:null;
  }).filter(Boolean);
 }
-// Independent line segments share one geometry and one material instead of
-// hundreds of Three.js groups. Subdivide the same 2-degree arcs as Globe.GL,
-// including the antimeridian, so the outlines follow the curvature of Earth.
-function borderVertices(paths,globe){
- var vertices=[];
- function append(lng,lat){
-  var p=globe.getCoords(lat,lng,.004);
-  vertices.push(p.x,p.y,p.z);
- }
- paths.forEach(function(path){
-  for(var i=1;i<path.points.length;i++){
-   var a=path.points[i-1],b=path.points[i],lng=a[0],delta=b[0]-lng;
-   while(delta>180)delta-=360;
-   while(delta<-180)delta+=360;
-   var latDelta=b[1]-a[1];
-   var steps=Math.max(1,Math.ceil(Math.hypot(delta,latDelta)/2));
-   for(var j=0;j<steps;j++){
-    append(lng+delta*j/steps,a[1]+latDelta*j/steps);
-    append(lng+delta*(j+1)/steps,a[1]+latDelta*(j+1)/steps);
-   }
-  }
- });
- return vertices;
-}
-async function renderCountryBorders(globe,paths){
- try{
-  if(typeof globe.customThreeObject!=="function"||typeof globe.customLayerData!=="function"||typeof globe.getCoords!=="function")throw Error("Custom layer unavailable");
-  // Match the Three.js release used by Globe.GL 2.27.1 (upstream yarn.lock).
-  var THREE=window.THREE;
-  if(!THREE||!THREE.LineSegments){
-   try{THREE=await import("https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.module.js");}
-   catch(error){THREE=await import("https://unpkg.com/three@0.149.0/build/three.module.js");}
-  }
-  if(state.globe!==globe)return;
-  var geometry=new THREE.BufferGeometry();
-  geometry.setAttribute("position",new THREE.Float32BufferAttribute(borderVertices(paths,globe),3));
-  geometry.computeBoundingSphere();
-  var material=new THREE.LineBasicMaterial({color:0xa8c6ec,transparent:true,opacity:.24,depthWrite:false});
-  var lines=new THREE.LineSegments(geometry,material);
-  lines.name="Earth Live country outlines";
-  lines.raycast=function(){}; // Decorative only: never intercept marker or globe input.
-  globe.customThreeObject(function(){return lines;}).customLayerData([{}]);
-  if(typeof performance!=="undefined"&&typeof performance.mark==="function")performance.mark("earth-live:borders-batched");
- }catch(error){
-  // Keep all borders using the original supported path API if batching fails.
-  if(state.globe===globe){
-   globe.pathsData(paths);
-   if(typeof performance!=="undefined"&&typeof performance.mark==="function")performance.mark("earth-live:borders-fallback");
-  }
- }
+// The built-in Globe.GL path layer supplies its own visibility, material and
+// curvature handling. Keep the approved country outlines on that layer.
+function renderCountryBorders(globe,paths){
+ if(state.globe!==globe)return;
+ globe.pathsData(paths);
+ if(typeof performance!=="undefined"&&typeof performance.mark==="function")performance.mark("earth-live:borders-native");
 }
 async function loadBorders(globe){
  try{
@@ -395,7 +351,7 @@ async function loadBorders(globe){
    try{
     var response=await fetch(sources[i]);if(!response.ok)throw Error("HTTP "+response.status);
     var paths=borderPaths(await response.json());
-    if(state.globe===globe)await renderCountryBorders(globe,paths);
+    renderCountryBorders(globe,paths);
     return;
    }catch(error){if(i===sources.length-1)throw error;}
   }

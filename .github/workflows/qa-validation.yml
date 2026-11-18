@@ -20,7 +20,7 @@ jobs:
         run: node scripts/verify-globe-bootstrap.cjs
       - name: Test map markers, country outlines, categories and hover
         run: node scripts/verify-map-interactions.cjs
-      - name: Verify batched country borders
-        run: node scripts/verify-border-batching.cjs
+      - name: Verify native country borders
+        run: node scripts/verify-country-borders.cjs
       - name: Verify adaptive WebGL framebuffer quality
         run: node scripts/verify-adaptive-rendering.cjs

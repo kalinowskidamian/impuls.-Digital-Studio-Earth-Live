@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/modern-web-browser-audit.yml'
       - 'scripts/summarize-lighthouse.cjs'
+      - 'scripts/verify-desktop-browser.cjs'
       - 'public/**'
   workflow_dispatch:
 
@@ -61,21 +62,37 @@ jobs:
             cat "browser-audit/$slug-summary.txt"
             echo "::endgroup::"
           done
-      - name: Verify desktop globe in a real browser
-        if: matrix.device == 'desktop'
-        shell: bash
-        run: |
-          npm install --prefix "$RUNNER_TEMP/earth-browser-test" --no-audit --no-fund playwright
-          python3 -m http.server 8765 --bind 127.0.0.1 --directory public >/tmp/qa-smoke-server.log 2>&1 &
-          smoke_server=$!
-          trap 'kill "$smoke_server" 2>/dev/null || true' EXIT
-          sleep 2
-          CHROME_BIN="$(command -v google-chrome)" NODE_PATH="$RUNNER_TEMP/earth-browser-test/node_modules" node scripts/verify-desktop-browser.cjs
       - name: Upload browser audits
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: qa-browser-audit-${{ matrix.device }}-${{ github.ref_name }}-${{ github.sha }}
+          path: browser-audit/
+          retention-days: 30
+          if-no-files-found: warn
+  visual-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify desktop globe and visible borders in Chromium
+        shell: bash
+        run: |
+          mkdir -p browser-audit
+          npm install --prefix "$RUNNER_TEMP/earth-browser-test" --no-audit --no-fund playwright pngjs
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory public >/tmp/qa-smoke-server.log 2>&1 &
+          smoke_server=$!
+          trap 'kill "$smoke_server" 2>/dev/null || true' EXIT
+          sleep 2
+          CHROME_BIN="$(command -v google-chrome)" NODE_PATH="$RUNNER_TEMP/earth-browser-test/node_modules" node scripts/verify-desktop-browser.cjs
+      - name: Upload visual regression captures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-visual-regression-${{ github.ref_name }}-${{ github.sha }}
           path: browser-audit/
           retention-days: 30
           if-no-files-found: warn
