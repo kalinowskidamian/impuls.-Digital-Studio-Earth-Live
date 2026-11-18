@@ -1,0 +1,34 @@
+name: Prepare optimized Earth textures (QA)
+on:
+  push:
+    branches: [QA]
+    paths:
+      - '.github/workflows/prepare-earth-textures.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  textures:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download pinned source textures and optimize
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p textures
+          curl -fsSL --retry 3 https://unpkg.com/three-globe@2.45.6/example/img/earth-blue-marble.jpg -o /tmp/earth-blue-marble.jpg
+          curl -fsSL --retry 3 https://unpkg.com/three-globe@2.45.6/example/img/earth-topology.png -o /tmp/earth-topology.png
+          convert /tmp/earth-blue-marble.jpg -strip -quality 82 -define webp:method=6 textures/earth-blue-marble.webp
+          convert /tmp/earth-topology.png -strip -quality 88 -define webp:method=6 textures/earth-topology.webp
+          identify /tmp/earth-blue-marble.jpg /tmp/earth-topology.png textures/*.webp
+          wc -c /tmp/earth-blue-marble.jpg /tmp/earth-topology.png textures/*.webp
+          for asset in textures/*.webp; do
+            echo "ASSET_BEGIN:$asset"
+            base64 -w 3000 "$asset" | sed 's/^/ASSET_DATA:/'
+            echo "ASSET_END:$asset"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: optimized-earth-textures
+          path: textures/
+          retention-days: 7
